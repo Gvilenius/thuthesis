@@ -32,9 +32,9 @@ Don't change this file in any respect.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 File: thu-fig-logo.pdf Graphic file (type pdf)
-<use thu-fig-logo.pdf>
+<thu-fig-logo.pdf>
 File: thu-text-logo.pdf Graphic file (type pdf)
-<use thu-text-logo.pdf>
+<thu-text-logo.pdf>
 Package fontspec Info: 
 (fontspec)             Font family 'FandolHei(0)' created for font 'FandolHei' with options [Extension={.otf},UprightFont={*-Regular},BoldFont={*-Bold}].
 (fontspec)              
@@ -113,34 +113,12 @@ Completed box being shipped out [1]
 ....\glue -5.01874
 ....\glue 0.0
 ....\hbox(50.58913+0.0)x50.58899
-.....\hbox(50.58926+0.0)x50.58926
-......\hbox(50.58926+0.0)x50.58926
-.......\hbox(50.58926+0.0)x0.0
-........\special{pdf:btrans}
-........\special{x:scale 0.74118 0.74118}
-........\hbox(68.255+0.0)x0.0, glue set - 68.255fil
-.........\hbox(68.255+0.0)x68.255
-..........\XeTeXpdffile "./thu-fig-logo.pdf"
-.........\glue 0.0 plus 1.0fil minus 1.0fil
-........\special{pdf:etrans}
-.......\kern 50.58926
-.......\glue 0.0 plus 1.0fil minus 1.0fil
+.....\special{pdf:image pagebox cropbox bbox 0 0 67.99983 67.99983 clip 0 width 50.\ETC.}
 ....\glue 10.03749
 ....\hbox(45.62605+0.0)x117.43874
 .....\hbox(38.59981+0.0)x117.43874, shifted -7.02625
 ......\hbox(38.59981+0.0)x117.43874
-.......\hbox(38.59993+0.0)x117.44234
-........\hbox(38.59993+0.0)x117.44234
-.........\hbox(38.59993+0.0)x0.0
-..........\special{pdf:btrans}
-..........\special{x:scale 0.8182 0.8182}
-..........\hbox(47.17625+0.0)x0.0, glue set - 143.53625fil
-...........\hbox(47.17625+0.0)x143.53625
-............\XeTeXpdffile "./thu-text-logo.pdf"
-...........\glue 0.0 plus 1.0fil minus 1.0fil
-..........\special{pdf:etrans}
-.........\kern 117.44234
-.........\glue 0.0 plus 1.0fil minus 1.0fil
+.......\special{pdf:image pagebox cropbox bbox 0 0 142.99965 46.99988 clip 0 width 11\ETC.}
 ....\penalty 10000
 ....\glue(\parfillskip) 0.0
 ....\glue(\rightskip) 0.0 plus 1.0fil

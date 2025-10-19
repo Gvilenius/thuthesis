@@ -2472,7 +2472,7 @@ Completed box being shipped out [6]
 .\kern 0.0
 Chapter 1
 File: example-image.pdf Graphic file (type pdf)
-<use example-image.pdf>
+<example-image.pdf>
 Missing character: There is no ⁡ (U+2061) in font [XITSMath-Regular.otf]/OT:scr
 ipt=math;language=dflt;!
 Missing character: There is no ⁡ (U+2061) in font [XITSMath-Regular.otf]/OT:scr
@@ -2637,18 +2637,7 @@ Completed box being shipped out [1]
 ......\glue(\leftskip) 0.0 plus 1.0fil
 ......\hbox(0.0+0.0)x0.0
 ......\hbox(240.8994+0.0)x321.19922
-.......\hbox(240.9+0.0)x321.20001
-........\hbox(240.9+0.0)x321.20001
-.........\hbox(240.9+0.0)x0.0
-..........\special{pdf:btrans}
-..........\special{x:scale 1 1}
-..........\hbox(240.9+0.0)x0.0, glue set - 321.20001fil
-...........\hbox(240.9+0.0)x321.20001
-............\XeTeXpdffile "../example-image.pdf"
-...........\glue 0.0 plus 1.0fil minus 1.0fil
-..........\special{pdf:etrans}
-.........\kern 321.20001
-.........\glue 0.0 plus 1.0fil minus 1.0fil
+.......\special{pdf:image pagebox cropbox bbox 0 0 319.99922 239.9994 clip 0 width 32\ETC.}
 ......\penalty 10000
 ......\glue(\parfillskip) 0.0
 ......\glue(\rightskip) 0.0 plus 1.0fil
@@ -6248,7 +6237,7 @@ Completed box being shipped out [3]
 .\kern 0.0
 Appendix A
 File: example-image.pdf Graphic file (type pdf)
-<use example-image.pdf>
+<example-image.pdf>
 Missing character: There is no ⁡ (U+2061) in font [XITSMath-Regular.otf]/OT:scr
 ipt=math;language=dflt;!
 Missing character: There is no ⁡ (U+2061) in font [XITSMath-Regular.otf]/OT:scr
@@ -6400,18 +6389,7 @@ Completed box being shipped out [4]
 ......\glue(\leftskip) 0.0 plus 1.0fil
 ......\hbox(0.0+0.0)x0.0
 ......\hbox(240.8994+0.0)x321.19922
-.......\hbox(240.9+0.0)x321.20001
-........\hbox(240.9+0.0)x321.20001
-.........\hbox(240.9+0.0)x0.0
-..........\special{pdf:btrans}
-..........\special{x:scale 1 1}
-..........\hbox(240.9+0.0)x0.0, glue set - 321.20001fil
-...........\hbox(240.9+0.0)x321.20001
-............\XeTeXpdffile "../example-image.pdf"
-...........\glue 0.0 plus 1.0fil minus 1.0fil
-..........\special{pdf:etrans}
-.........\kern 321.20001
-.........\glue 0.0 plus 1.0fil minus 1.0fil
+.......\special{pdf:image pagebox cropbox bbox 0 0 319.99922 239.9994 clip 0 width 32\ETC.}
 ......\penalty 10000
 ......\glue(\parfillskip) 0.0
 ......\glue(\rightskip) 0.0 plus 1.0fil
