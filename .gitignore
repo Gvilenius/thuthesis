@@ -5,6 +5,7 @@ node_modules/
 dist/
 thuthesis*.zip
 thuthesis-ctan/
+out/
 
 ## generated files:
 dtx-style.sty
@@ -31,6 +32,7 @@ testfiles/**/*.pdf
 *.cb
 *.cb2
 .*.lb
+
 !testfiles/**/*.aux
 !testfiles/**/*.toc
 !testfiles/**/*.lof
