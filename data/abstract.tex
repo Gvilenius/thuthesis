@@ -3,37 +3,29 @@
 % 中英文摘要和关键字
 
 \begin{abstract}
-  论文的摘要是对论文研究内容和成果的高度概括。
-  摘要应对论文所研究的问题及其研究目的进行描述，对研究方法和过程进行简单介绍，对研究成果和所得结论进行概括。
-  摘要应具有独立性和自明性，其内容应包含与论文全文同等量的主要信息。
-  使读者即使不阅读全文，通过摘要就能了解论文的总体内容和主要成果。
+以Transformer为基础的大语言模型已成为迈向通用人工智能的关键里程碑。然而，随着模型参数量与序列长度的不断攀升，其全生命周期的计算系统面临着严峻的挑战：在推理侧，大规模部署带来的巨额能耗成本已成为商业落地的主要障碍；在训练侧，由于设备存储、带宽的制约带来的计算瓶颈严重制约了模型能力的扩展；在并行策略侧，日益复杂的硬件拓扑与模型架构使得人工设计最优并行策略变得极具挑战性。针对上述能耗、通信与策略设计三大挑战，本文从推理服务、训练通信、策略自动发现三个维度展开研究，提出了一系列系统级的创新解决方案。本文的主要研究内容与贡献如下：
 
-  论文摘要的书写应力求精确、简明。
-  切忌写成对论文书写内容进行提要的形式，尤其要避免“第 1 章……；第 2 章……；……”这种或类似的陈述方式。
+（1）针对大模型推理服务（Inference Serving）中日益严峻的能耗与服务质量（SLO）保障问题，本文揭示了在预填充-解码（Prefill-Decode, PD）分离架构下，LLM推理存在非单调的“U型能耗-频率”曲线以及由硬件分块机制导致的“能效阶梯”现象。据此，本文设计并实现了GreenServe系统。该系统包含轻量级在线延迟预测器EcoPred、迭代级自适应频率控制器EcoFreq以及状态空间导向的请求路由器EcoRoute。GreenServe通过精细化的频率调节与请求调度，在保障首字延迟（TTFT）和代币生成间隔（ITL）SLO的前提下，实现了相比静态最高频率策略高达36.3\%的端到端能耗降低，为大模型的绿色低碳部署提供了有效方案。
 
-  关键词是为了文献标引工作、用以表示全文主要内容信息的单词或术语。
-  关键词不超过 5 个，每个关键词中间用分号分隔。
+（2）针对长上下文大模型训练中中间激活值通信量爆炸的问题，本文深入分析了通信开销与模型架构的关系，提出了权重流水线并行新范式WeiPipe。与传统的传递激活值的流水线并行不同，WeiPipe通过在设备间流转模型权重及其梯度，将通信量从与序列长度线性相关解耦为仅与模型大小相关的常数。本文进一步设计了WeiPipe-Interleave与WeiPipe-zero-bubble调度策略，通过前反向计算的交错执行有效掩盖了通信延迟并填充了流水线气泡。实验表明，在长序列训练场景下，WeiPipe相比现有主流方案（如1F1B、FSDP）实现了30\%至80\%的吞吐量提升，显著突破了长窗口训练的通信瓶颈。
+
+（3）针对分布式训练策略设计依赖专家经验且难以泛化的问题，本文提出了一种基于数据一元论视角的并行策略自动发现框架CATFlow。该框架摒弃了传统的“以算子为中心”的抽象，将并行计划建模为约束感知张量（Constraint-Aware Tensor, CAT）的时空轨迹优化问题。通过构建包含张量分布、依赖管理及空间界定原语的完备搜索空间，并利用势能下降算法进行自动搜索，CATFlow不仅能够复现经典策略，还自动发现了包括ZeRO-3.5（权重驻留）和ZeRO-4（梯度延迟规约）在内的新型高效策略。这些新策略在不同硬件配置下实现了比ZeRO-3高出39.1\%的吞吐量，并显著降低了显存占用，验证了该框架发现未知高效策略的能力。
+
+
+
+关键词：
 
   % 关键词用“英文逗号”分隔，输出时会自动处理为正确的分隔符
   \thusetup{
-    keywords = {关键词 1, 关键词 2, 关键词 3, 关键词 4, 关键词 5},
+    keywords = {大规模语言模型；推理服务系统；分布式训练；流水线并行；自动并行化；能效优化},
   }
 \end{abstract}
 
-\begin{abstract*}
-  An abstract of a dissertation is a summary and extraction of research work and contributions.
-  Included in an abstract should be description of research topic and research objective, brief introduction to methodology and research process, and summary of conclusion and contributions of the research.
-  An abstract should be characterized by independence and clarity and carry identical information with the dissertation.
-  It should be such that the general idea and major contributions of the dissertation are conveyed without reading the dissertation.
+% \begin{abstract*}
 
-  An abstract should be concise and to the point.
-  It is a misunderstanding to make an abstract an outline of the dissertation and words “the first chapter”, “the second chapter” and the like should be avoided in the abstract.
 
-  Keywords are terms used in a dissertation for indexing, reflecting core information of the dissertation.
-  An abstract may contain a maximum of 5 keywords, with semi-colons used in between to separate one another.
-
-  % Use comma as separator when inputting
-  \thusetup{
-    keywords* = {keyword 1, keyword 2, keyword 3, keyword 4, keyword 5},
-  }
-\end{abstract*}
+%   % Use comma as separator when inputting
+%   \thusetup{
+%     keywords* = {keyword 1, keyword 2, keyword 3, keyword 4, keyword 5},
+%   }
+% \end{abstract*}
