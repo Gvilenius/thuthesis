@@ -21,22 +21,27 @@
 （3）针对并行策略设计难题，本文提出了基于数据一元论的自动发现框架CATFlow。将并行计划建模为约束感知张量的时空轨迹优化问题，通过自动搜索发现了包括ZeRO-3.5在内的新型高效策略，不引入额外开销的前提下，能够在不同配置下相比经典策略提升达39.1\%的吞吐。
 
 
-% 动态资源分配 -> 根据负载动态调整资源分配，节省资源浪费
-% 高熵资源利用 -> 非瓶颈的情况下尽可能多的去使用资源
-% 异构资源调度 -> 使用更多的非受限资源来节省受限资源
-
-
-  % 关键词用“英文逗号”分隔，输出时会自动处理为正确的分隔符
+  % 关键词用”英文逗号”分隔，输出时会自动处理为正确的分隔符
   \thusetup{
-    keywords = {大语言模型,分布式计算,并行优化, 能效优化},
+    keywords = {大语言模型,分布式计算,并行优化,能效优化},
   }
 \end{abstract}
 
-% \begin{abstract*}
+\begin{abstract*}
+Transformer-based large language models (LLMs) have achieved remarkable success in intelligent dialogue, code generation, and agent systems, demonstrating enormous potential toward artificial general intelligence. However, due to their massive parameter scale, LLMs impose extremely high demands on computation, memory, communication, and energy throughout their lifecycle, significantly constraining further development. When any single resource becomes a bottleneck, it not only limits overall system performance but also leads to idling and waste of other resources.
 
+During inference, \textbf{energy efficiency} is a critical factor limiting service scalability. Constrained by the power supply limits of data centers, higher energy efficiency must be pursued under latency constraints to alleviate capacity pressure. During training, \textbf{communication} is the key bottleneck restricting computational utilization. In clusters with limited interconnect bandwidth, the communication overhead of conventional parallelism schemes grows with the context length of large models, severely hampering overall training throughput and necessitating new parallel paradigms. \textbf{Parallel strategy} design is another major challenge for efficient utilization of heterogeneous resources. While well-designed strategies can leverage abundant resources to alleviate scarce ones, static strategies relying on expert experience fail to adapt to multi-dimensional resource constraints across diverse hardware environments, calling for efficient automated strategy discovery.
 
-%   % Use comma as separator when inputting
-%   \thusetup{
-%     keywords* = {keyword 1, keyword 2, keyword 3, keyword 4, keyword 5},
-%   }
-% \end{abstract*}
+Based on the above three challenges, this thesis conducts systematic research from three dimensions: energy efficiency optimization, communication optimization, and automatic parallel strategy discovery. The contributions are as follows:
+
+(1) For the energy efficiency problem in LLM inference serving, this thesis reveals that LLM inference exhibits a non-monotonic U-shaped energy-frequency curve and an ``energy staircase'' phenomenon caused by hardware tiling granularity. Accordingly, GreenServe is designed and implemented, which achieves up to 36.3\% reduction in end-to-end energy consumption compared to static strategies while preserving service level objectives, through fine-grained frequency control and request routing.
+
+(2) For the communication explosion of intermediate activations in long-context LLM training, this thesis analyzes the relationship between communication overhead and model architecture, and proposes WeiPipe---a novel weight pipeline parallelism paradigm. Unlike conventional pipeline parallelism that passes activations, WeiPipe circulates model weights and gradients across devices, decoupling communication volume from sequence length to depend only on model size. Experiments show that WeiPipe achieves 30\% to 80\% throughput improvement over mainstream pipeline methods in long-sequence training scenarios.
+
+(3) For the challenge of parallel strategy design, this thesis proposes CATFlow---an automatic discovery framework based on data-monistic abstraction. By modeling parallel plans as spatiotemporal trajectory optimization of Constraint-Aware Tensors (CATs) and employing a potential energy descent search algorithm, CATFlow automatically discovers novel efficient strategies including ZeRO-3.5 and ZeRO-4, achieving up to 39.1\% throughput improvement over classical strategies across various configurations without introducing additional overhead.
+
+  % Use comma as separator when inputting
+  \thusetup{
+    keywords* = {large language model, distributed computing, parallel optimization, energy efficiency},
+  }
+\end{abstract*}

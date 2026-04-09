@@ -13,14 +13,45 @@
 本节通过系统性的实证分析，揭示大模型推理在能效优化方面的三个关键洞察，为系统设计提供理论基础。实验以LLaMA-3.1-8B模型和SGLang推理框架为基础，在NVIDIA A100 GPU上进行profiling，测量TTFT、ITL和端到端能耗等关键指标。
 
 \subsection{多时间尺度负载动态性}
+\label{subsec:temporal-variation}
 
 真实世界的LLM推理工作负载在两个不同的时间尺度上呈现显著的动态性。
 
 在\textbf{粗粒度}层面，请求到达率和提示词长度随时间显著波动，导致prefill和decode吞吐量需求的比例发生变化。以Azure LLM Inference Trace 2024数据集为例，该数据集将请求分为两类：对话（conversation）和代码（code）。分析发现，对话请求的prefill吞吐量在一天内保持相对稳定，而代码请求呈现明显的昼夜模式，在下午和傍晚达到峰值。此外，代码请求的decode长度通常较短。因此，decode吞吐量的整体变化幅度远小于prefill。
 
+\begin{figure}[!t]
+    \centering
+    \begin{subfigure}[b]{0.49\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/TPS_IN.pdf}
+        \caption{Prefill吞吐量}
+        \label{fig:pd-ratio-prefill}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/TPS_OUT.pdf}
+        \caption{Decode吞吐量}
+        \label{fig:pd-ratio-decoding}
+    \end{subfigure}
+    \caption{Azure LLM Inference Trace 2024数据集中prefill和decode吞吐量的时序变化。对话请求和代码请求展现出不同的昼夜模式。}
+    \label{fig:pd-ratio}
+\end{figure}
+
+如图\ref{fig:pd-ratio}所示，prefill吞吐量呈现显著的昼夜波动，而decode吞吐量的变化相对平缓。这种差异源于不同请求类型的特征：代码请求通常具有较长的输入提示和较短的输出，而对话请求的输入输出长度更为均衡。对于同时处理两类请求的系统，这种工作负载构成的变化导致全天prefill-decode吞吐量需求比例的显著波动。
+
 在\textbf{细粒度}层面，prefill实例中的活跃token数和请求数随时间快速变化。由于动态批处理、请求完成和各种请求长度的影响，这种短期的负载波动直接影响GPU利用率和延迟性能。
 
-这些多时间尺度的动态性使得静态或粗粒度的频率控制策略难以有效工作。例如，如果仅根据小时级的平均负载设置频率，则无法应对分钟级的负载波动；如果仅根据分钟级的平均负载设置频率，则无法应对秒级的请求波动。这促使我们需要设计阶段感知的、响应式的能效控制方法。
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{figures/prefill-load-bs-time.pdf}
+    \caption{Prefill阶段活跃请求数和token数的迭代级波动。由于动态批处理和请求完成，负载在连续迭代间快速变化。}
+    \label{fig:prefill-tokens-fluctuation}
+\end{figure}
+
+如图\ref{fig:prefill-tokens-fluctuation}所示，prefill实例的负载在连续迭代间剧烈波动。活跃请求数可能在一个迭代中为10个，而在下一个迭代中就变为50个；批处理的token数同样呈现大幅跳跃。这种快速变化源于：新请求的动态到达、不同请求的输入长度差异、以及请求完成后从批处理中移除的时机。
+
+这些多时间尺度的动态性使得静态或粗粒度的频率控制策略难以有效工作。例如，如果仅根据小时级的平均负载设置频率，则无法应对分钟级的负载波动；如果仅根据分钟级的平均负载设置频率，则无法应对秒级的请求波动。更重要的是，传统的基于时间窗口的频率调整（如每5秒调整一次）对于prefill阶段尤其不适用——因为相邻迭代的token数可能相差数倍，粗粒度调整会导致某些迭代的SLO违反。
 
 \textbf{洞察1}：真实世界的LLM推理工作负载在两个时间尺度上变化：粗粒度的prefill-decode需求比例变化和细粒度的迭代级负载波动。这种多时间尺度动态性使得静态或粗粒度的频率控制策略失效，需要设计阶段感知的、响应式的能效优化方法。
 
@@ -28,20 +59,59 @@
 
 频率调节是能效优化的常用技术，然而其对LLM推理的影响并非单调。我们的测量发现清晰的U型能耗-频率关系，表明存在能效"甜点区"。
 
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/u-shaped-intro.pdf}
+    \caption{LLaMA-3.1-8B在A100 GPU上使用SGLang服务时，不同GPU频率下的延迟和能耗关系。能耗呈现明显的U型曲线，存在能效甜点。}
+    \label{fig:u-shape-coupled}
+\end{figure}
+
+如图\ref{fig:u-shape-coupled}所示，当A100 GPU频率从1410 MHz降至1005 MHz（降低28.7\%）时，执行时间虽然增加，但增加幅度呈亚线性。因此，总能耗随频率呈U型曲线变化。这一U型趋势表明：在低频段，执行时间主导能耗；在高频段，功率主导能耗；而在中间存在能耗甜点。
+
 为了理解这种关系在prefill-decode分离架构下的表现，我们分别考察两个阶段。实验结果表明，两个阶段都呈现延迟随频率单调递减、能耗随频率呈U型曲线的特征。1005 MHz始终是能耗最优的点，而低于此频率的设置在能耗和延迟两方面都更差，因而是严格次优的。然而，两个阶段在曲线形态和敏感性上存在显著差异。
+
+\begin{figure}[!t]
+    \centering
+    \begin{subfigure}[b]{0.49\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/prefill_energy_ttft.pdf}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/decode_energy_itl.pdf}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.49\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/prefill_energy_latency_diff.pdf}
+        \caption{Prefill阶段}
+        \label{fig:u-shape-p}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/decode_energy_latency_diff.pdf}
+        \caption{Decode阶段}
+        \label{fig:u-shape-d}
+    \end{subfigure}
+    \caption{Prefill和Decode阶段在不同GPU频率下的能耗（上）和延迟（中）特性。下图展示频率从1005 MHz增加到1410 MHz时的能耗和延迟相对变化。Prefill在约1305 MHz时达到TDP限制。两个阶段都呈现U型能耗-频率曲线，但在形态和敏感性上差异显著。}
+    \label{fig:u-shape}
+\end{figure}
+
+图\ref{fig:u-shape}详细展示了两个阶段的能耗-频率关系。可以看出，prefill阶段的能耗曲线更为陡峭，而decode阶段相对平缓。更重要的是，两个阶段对频率变化的敏感性不同：prefill阶段在较高频率下仍然能从增加的计算能力中获益，而decode阶段的边际收益递减更快。
 
 根据CMOS电路的功耗模型，GPU的功率$P$由频率无关的静态部分和频率相关的动态部分组成：
 \begin{equation}
     P \approx P_{\text{static}} + CV^2f \sim A + B f^{1+\alpha}
 \end{equation}
-其中$A$、$B$、$C$、$\alpha$是系数，$V$是电压，它也随频率增加而增加。因此，执行时间$T$和能耗$E$可以表示为：
+其中$A$、$B$、$C$、$\alpha$是系数，$V$是电压，它也随频率增加而增加。我们记$V^2\sim f^\alpha$，其中$\alpha>0$且可能随$f$增加而增大。因此，执行时间$T$和能耗$E$可以表示为：
 \begin{align}
-    T &\sim f^{-\beta} \\
+    T &\sim f^{-\beta} \sim \left[(P-A)/B\right]^{-\beta/(1+\alpha)} \\
     E &= PT \sim A f^{-\beta} + B f^{1+\alpha - \beta}
 \end{align}
 其中$0\le\beta\le1$是算术强度相关的系数：$\beta=1$表示完全计算受限，$\beta=0$表示完全内存受限。
 
-能耗-频率曲线呈U型的原因是：在低频段，$A f^{-\beta}$项占主导（时间主导）；在高频段，$B f^{1+\alpha - \beta}$项占主导（功率主导）。
+能耗-频率曲线呈U型的原因是：在低频段，$A f^{-\beta}$项占主导（时间主导）；在高频段，$B f^{1+\alpha - \beta}$项占主导（功率主导）。这一理论分析与图\ref{fig:u-shape}的实证观察相符。
 
 对于计算受限的prefill阶段，$\beta\approx1$，这意味着它几乎成比例地从更高频率中受益。Prefill阶段在约1305 MHz时就接近GPU的热设计功耗（TDP）限制。相比之下，对于典型的内存受限的decode阶段，$\beta<1$，这意味着decode从更高频率中获得亚线性的收益。实验表明，将频率从1005 MHz提高到1410 MHz，仅带来约20\%的ITL降低，代价是约50\%的更高能耗。值得注意的是，随着batch size增大和算术强度增加，decode逐渐向计算受限行为转变，对更高频率的响应更强。
 
@@ -51,11 +121,30 @@
 
 现代LLM推理系统通过批处理多个请求来提高GPU利用率。然而，我们的profiling发现，隐式的batch size边界在能耗和延迟方面创造了架构导致的无效率，特别是在decode阶段。
 
-实验表明，虽然增大batch size通常会降低每输出token能耗（EPOT）并提高效率，但这一趋势在特定阈值处被打断：跨越某些阈值（如256$\rightarrow$257）会导致性能突然下降，在ITL和EPOT中形成"阶梯"模式。类似但较弱的影响在prefill中也存在，但被其较大的token数量所掩盖。
+\begin{figure}[!t]
+    \centering
+    \begin{minipage}[b]{0.49\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/energy_tile.pdf}
+        \caption{Decode阶段ITL和EPOT的batch size边界效应和"阶梯"模式。}
+        \label{fig:kernel-tile}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.49\columnwidth}
+        \centering
+        \includegraphics[width=\columnwidth]{figures/voltanallm-gemm-tile.drawio.pdf}
+        \caption{GEMM的tile量化效应。Tile大小为128，请求batch size为257。}
+        \label{fig:gemm-tile}
+    \end{minipage}
+\end{figure}
 
-这种不连续性源于tile量化效应。GPU执行GEMM时，将输出矩阵划分为固定大小的"tile"并分配给线程块。当batch size不是tile维度的整数倍时，就会发生"阶梯"效应。例如，当batch size从256增加到257时，GPU必须启动一个全新的、但几乎为空的tile（可能只有6.25\%的有用数据）来处理这单个额外请求。这个利用率不足的tile需要与完全利用的tile相同的执行时间，导致延迟和能耗的突然跳跃。
+如图\ref{fig:kernel-tile}所示，虽然增大batch size通常会降低每输出token能耗（EPOT）并提高效率，但这一趋势在特定阈值处被打断：跨越某些阈值（如256$\rightarrow$257）会导致性能突然下降，在ITL和EPOT中形成"阶梯"模式。类似但较弱的影响在prefill中也存在，但被其较大的token数量所掩盖。
 
-在耦合服务架构（如chunked prefill）中，这种影响可以通过将prefill和decode token合并到共享kernel中来掩盖。但在prefill-decode分离架构中，这一问题被放大，因为decode实例操作着较小的、高度可变的batch size。
+这种不连续性源于tile量化效应。GPU执行GEMM时，将输出矩阵划分为固定大小的"tile"并分配给线程块。当batch size不是tile维度的整数倍时，就会发生"阶梯"效应。如图\ref{fig:gemm-tile}所示，当batch size从256增加到257时，GPU必须启动一个全新的、但几乎为空的tile（可能只有6.25\%的有用数据）来处理这单个额外请求。这个利用率不足的tile需要与完全利用的tile相同的执行时间，导致延迟和能耗的突然跳跃。
+
+具体而言，GPU处理大规模工作负载时将其分解为多个"波次"（waves）的线程块，这些线程块按固定处理周期顺序执行。当一个工作负载的最后一个波次无法完全占用GPU的流式多处理器（SM）时，硬件利用率就会下降。然而，这个部分填充的波次仍然消耗完整的处理周期，导致延迟的不成比例增加，形成"延迟阶梯"模式而非平滑的线性改进。
+
+在耦合服务架构（如chunked prefill）中，这种影响可以通过将prefill和decode token合并到共享kernel中来掩盖。但在prefill-decode分离架构中，这一问题被放大，因为decode实例操作着较小的、高度可变的batch size。这是当前主流LLM服务框架（如SGLang和vLLM）中被忽视的关键无效率来源。
 
 \textbf{洞察3}：GPU架构粒度——特别是SM级的分块和调度边界——在batch size跨越特定阈值时导致能耗和延迟的不连续"阶梯"效应。这一硬件级现象在prefill-decode分离的LLM推理中被放大，揭示了一个被忽视的能效无效率来源，促使我们设计架构感知的频率和批处理控制。
 
@@ -77,11 +166,22 @@
 
 GreenServe的整体架构包含三个核心组件：
 
-\textbf{EcoFreq}：阶段感知的迭代级频率控制器。根据当前系统状态和批处理信息，为prefill和decode实例选择最优频率，在保证SLO的前提下最大化能效。其频率选择由EcoPred预测器指导。
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/voltanallm-overall-arch.drawio.pdf}
+    \caption{GreenServe系统整体架构。系统包含三个核心组件：EcoPred延迟预测器、EcoFreq频率控制器和EcoRoute状态空间路由器，协同实现SLO感知的能效优化。}
+    \label{fig:overall-arch}
+\end{figure}
 
-\textbf{EcoPred}：轻量级推理延迟预测器。基于XGBoost构建，结合离线profiling和在线自适应，在工作负载动态变化下保持预测精度。
+如图\ref{fig:overall-arch}所示，GreenServe建立在prefill-decode分离架构之上，通过三个核心组件协同工作实现能效优化：
 
-\textbf{EcoRoute}：能效感知的请求路由器。将prefill完成的请求分配到decode实例，通过分析和导航每个decode实例的状态空间来规避架构粒度导致的能效损失。
+\textbf{EcoPred}：轻量级推理延迟预测器。基于XGBoost构建，结合离线profiling和在线自适应，在工作负载动态变化下保持预测精度。EcoPred为EcoFreq提供延迟预测支持，是频率选择决策的基础。
+
+\textbf{EcoFreq}：阶段感知的迭代级频率控制器。根据当前系统状态和批处理信息，为prefill和decode实例选择最优频率，在保证SLO的前提下最大化能效。EcoFreq作为独立进程运行，通过低开销通信与推理引擎解耦。
+
+\textbf{EcoRoute}：能效感知的请求路由器。将prefill完成的请求分配到decode实例，通过分析和导航每个decode实例的状态空间来规避架构粒度导致的能效损失。EcoRoute使得系统能够在多实例环境下实现全局能效最优。
+
+这三个组件形成了一个闭环控制系统：EcoPred提供准确的延迟预测，EcoFreq据此进行频率调整，EcoRoute在全局层面优化请求分配。整个系统能够在毫秒级时间尺度上响应负载变化，实现精细化的能效控制。
 
 \subsection{EcoPred：在线自适应延迟预测器}
 
@@ -117,27 +217,64 @@ EcoFreq的有效性依赖于准确的推理延迟预测器$T_P(\cdot)$和$T_D(\c
 
 为克服这些挑战，我们设计EcoFreq——一个响应式的、SLO感知的控制器，为prefill和decode实例执行迭代级GPU频率调整。
 
-EcoFreq作为独立进程运行在关键推理路径之外，通过低开销的ZeroMQ与推理引擎通信。它使用NVIDIA Management Library的\texttt{nvmlDeviceSetGpuLockedClocks} API来应用新频率，测量表明这一操作耗时小于3ms。整个控制周期小于4ms，远短于典型的prefill（约500ms）和decode迭代（约50ms）推理时间。
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/voltanallm-governor.drawio.pdf}
+    \caption{EcoFreq频率控制器工作流程。控制器在推理迭代间隙执行，通过三步算法选择最优频率。}
+    \label{fig:governor}
+\end{figure}
+
+如图\ref{fig:governor}所示，EcoFreq作为独立进程运行在关键推理路径之外，通过低开销的ZeroMQ与推理引擎通信。它使用NVIDIA Management Library的\texttt{nvmlDeviceSetGpuLockedClocks} API来应用新频率，测量表明这一操作耗时小于3ms。整个控制周期小于4ms，远短于典型的prefill（约500ms）和decode迭代（约50ms）推理时间。
+
+这种迭代级的响应式设计对于prefill阶段尤为关键。如图\ref{fig:prefill-tokens-fluctuation}所示，prefill实例的批处理token数在连续迭代间可能变化数倍。基于时间窗口的粗粒度频率调整无法适应这种快速变化——例如，如果以5秒为窗口调整频率，prefill实例可能在这期间执行数十次迭代，其中某些迭代的token数远超预期，导致SLO违反。相比之下，EcoFreq在每次迭代前都重新评估频率选择，确保每个迭代都能在SLO约束下最大化能效。
 
 \subsubsection{频率选择算法}
 
-设$\mathcal{F}$为频率选项集合。EcoFreq的每次调用包含三个步骤：
+设$\mathcal{F}$为频率选项集合。EcoFreq的每次调用包含三个步骤（完整算法见算法\ref{alg:ecofreq}）：
 
-\textbf{步骤1：队列检查}。如果有处于等待状态的请求，选择最高频率$\max(\mathcal{F})$以迅速清理等待队列，防止SLO违反。
+\textbf{步骤1：队列检查}。如果系统中存在处于等待状态（已进入队列但尚未被调度执行）的请求，EcoFreq选择最高频率$\max(\mathcal{F})$以迅速清理等待队列。这一步骤的必要性在于：即使当前正在运行的请求在低频下仍有足够的SLO裕度，等待中的请求却在持续累积排队延迟。若不及时清理，等待请求最终会因队列延迟过长而违反TTFT SLO，即便后续推理本身很快也无济于事。
 
 \textbf{步骤2：阶段特定调整}。每个阶段的目标token延迟分解为：
 \begin{equation}
     \text{Latency} = T_{\text{fixed}} + T_{\text{inference}}(f) \le \text{SLO}
 \end{equation}
-其中$T_{\text{fixed}}$是频率无关的时间，$T_{\text{inference}}(f)$是频率相关的GPU推理时间。对于decode，$T_{\text{fixed}}$可以忽略；对于prefill，$T_{\text{fixed}}$主要是请求的等待时间。EcoFreq设置阶段调整目标：
+其中$T_{\text{fixed}}$是频率无关的时间，$T_{\text{inference}}(f)$是频率相关的GPU推理时间。对于decode，$T_{\text{fixed}}$可以忽略；对于prefill，$T_{\text{fixed}}$主要是请求的已累积等待时间。EcoFreq设置阶段调整目标：
 \begin{equation}
     T_{\text{inference}}(f) \le S = \begin{cases}
         S_P - \max\left( \mathbf{T}_{\text{waiting}} \right), & \text{prefill} \\
         S_D, & \text{decode}
     \end{cases}
 \end{equation}
+对于prefill，通过从SLO中扣除当前批次中最长请求的已等待时间，将频率决策与实际可用的推理时间预算精确对齐，避免因估算不足而导致SLO违反。
 
-\textbf{步骤3：频率选择}。使用延迟预测器$T_P(\cdot)$或$T_D(\cdot)$，按升序遍历候选频率$\mathcal{F}$，选择使$T_{\text{inference}}(f) \le S$的最低频率。如果都无法满足，则默认使用$\max(\mathcal{F})$。
+\textbf{步骤3：频率选择}。使用延迟预测器$T_P(\cdot)$或$T_D(\cdot)$，按升序遍历候选频率$\mathcal{F}$，选择使$T_{\text{inference}}(f) \le S$的最低频率。如果所有候选频率均无法满足约束（通常发生在系统过载时），则默认使用$\max(\mathcal{F})$，以尽量减少SLO违反的程度。
+
+\begin{algorithm}[!t]
+\caption{EcoFreq：SLO感知迭代级频率选择}
+\label{alg:ecofreq}
+\begin{algorithmic}[1]
+    \REQUIRE 系统状态$\mathbf{M}$，批处理信息$\mathbf{B}$，频率选项$\mathcal{F}$，预测器$T_P(\cdot)$和$T_D(\cdot)$，SLO目标$S_P$和$S_D$
+    \ENSURE 所选GPU频率$f$
+    \IF{$\mathbf{M}$中存在等待状态请求}
+        \RETURN $\max(\mathcal{F})$ \hfill\COMMENT{步骤1：队列检查，优先清理等待队列}
+    \ENDIF
+    \IF{当前批次$\mathbf{B}$为prefill阶段}
+        \STATE $S \leftarrow S_P - \max\left(\mathbf{T}_{\text{waiting}}(\mathbf{B})\right)$，$T_{\text{inf}} \leftarrow T_P$
+    \ELSE
+        \STATE $S \leftarrow S_D$，$T_{\text{inf}} \leftarrow T_D$ \hfill\COMMENT{步骤2：阶段特定调整}
+    \ENDIF
+    \FOR{$f$ in $\mathcal{F}$（升序遍历）}
+        \IF{$T_{\text{inf}}(\mathbf{M}, \mathbf{B}, f) \le S$}
+            \RETURN $f$ \hfill\COMMENT{步骤3：选择满足SLO的最低频率}
+        \ENDIF
+    \ENDFOR
+    \RETURN $\max(\mathcal{F})$ \hfill\COMMENT{所有频率均无法满足SLO，回退最大频率}
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{低开销设计}
+
+EcoFreq的高效性还体现在其低开销的工程实现上。频率设置通过NVIDIA Management Library的\texttt{nvmlDeviceSetGpuLockedClocks} API完成，实测耗时小于3 ms，远低于传统\texttt{nvidia-smi}命令的方式。算法本身（预测查询+决策逻辑）执行时间约0.5 ms。因此，EcoFreq每次迭代的端到端开销小于4 ms，与推理引擎的模型计算（prefill约500 ms，decode约50 ms）完全重叠，对推理性能无实质影响。
 
 \subsection{EcoRoute：状态空间引导路由}
 
@@ -145,7 +282,26 @@ EcoFreq作为独立进程运行在关键推理路径之外，通过低开销的Z
 
 \subsubsection{状态空间视角}
 
-如前所述，decode实例的ITL和能耗是$(N_{\text{req}}, N_{\text{kv}}, f)$的函数。由于EcoFreq根据$(N_{\text{req}}, N_{\text{kv}})$确定$f$，每个实例的操作条件可以表示为$(N_{\text{req}}, N_{\text{kv}})$状态空间中的一个点。状态空间的可视化显示了由batch size边界创造的"频率悬崖"——当$N_{\text{req}}$跨越batch size边界时，ITL显著增加，迫使EcoFreq急剧提高频率以满足SLO，导致能耗不成比例地跳跃。因此，有效的路由策略应尽可能使实例远离这些高成本区域。
+如前所述，decode实例的ITL和能耗是$(N_{\text{req}}, N_{\text{kv}}, f)$的函数。由于EcoFreq根据$(N_{\text{req}}, N_{\text{kv}})$确定$f$，每个实例的操作条件可以表示为$(N_{\text{req}}, N_{\text{kv}})$状态空间中的一个点。
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/router_motivation.pdf}
+    \caption{Decode实例的状态空间可视化。颜色表示EcoFreq选择的频率，白色虚线标识batch size边界。跨越边界会导致"频率悬崖"——能耗不成比例地跳跃。}
+    \label{fig:router-motivation}
+\end{figure}
+
+如图\ref{fig:router-motivation}所示，状态空间的可视化显示了由batch size边界创造的"频率悬崖"——当$N_{\text{req}}$跨越batch size边界（如从256到257）时，ITL显著增加，迫使EcoFreq急剧提高频率以满足SLO，导致能耗不成比例地跳跃。这种跳跃源于前述的tile量化效应：跨越batch size边界时，GPU需要启动额外的部分填充tile，延迟增加迫使频率提升，而更高频率带来的能耗增加是非线性的。
+
+因此，有效的路由策略应尽可能使实例远离这些高成本区域。传统的轮询路由策略完全不考虑状态空间，可能导致某些实例频繁跨越边界，而其他实例却远未达到边界潜力。
+
+\subsubsection{动机示例}
+
+以一个具体场景说明路由决策的重要性。考虑2个decode实例，共需分配520个请求，batch size边界设在256处（即从256增加到257时会触发"频率悬崖"）。
+
+若采用"对称"路由，将260个请求均匀分配给每个实例，两个实例的$N_{\text{req}}$均超过256，被迫跨越边界，EcoFreq将为两者都选择高频率以保证SLO，能耗显著增加。
+
+相比之下，"非对称"路由将240个请求分配给实例A、280个分配给实例B。实例A保持在边界以下，EcoFreq为其选择低频率，仅实例B因超越边界而使用高频率。虽然实例B的ITL略有增加，但只要仍在SLO范围内，整体能耗就会低于对称方案。这一示例揭示了路由决策与频率控制之间深层的协同关系：路由不仅影响负载分布，还通过状态空间的位置间接决定每个实例的运行频率和能耗。
 
 \subsubsection{路由算法设计}
 
@@ -153,46 +309,125 @@ EcoFreq作为独立进程运行在关键推理路径之外，通过低开销的Z
 
 算法比较当前频率$\mathcal{F}$和假设结果频率$\mathcal{F}'$，根据以下情况做出决策：
 
-\textbf{情况1}：部分实例频率增加，且$\mathcal{F}'$的分布仍在阈值内（$\max(\mathcal{F}')-\min(\mathcal{F}') \le \Delta$）。选择频率未变的实例中最低的那个，避免不必要的跨越"频率悬崖"。
+\textbf{情况1}：部分实例频率增加，且$\mathcal{F}'$的分布仍在阈值内（$\max(\mathcal{F}')-\min(\mathcal{F}') \le \Delta$）。选择频率未变的实例中负载最低的那个，避免不必要的跨越"频率悬崖"。这一规则对应上述动机示例中"非对称"路由的核心思想：在负载均衡允许的范围内，优先保护低频实例。
 
-\textbf{情况2}：其他情况，包括无变化、所有实例频率都增加、或频率差超过阈值。使用轮询方式选择结果频率最低的实例。
+\textbf{情况2}：其他情况，包括（a）无实例频率变化、（b）所有实例频率都增加、（c）部分实例频率增加但$\mathcal{F}'$的分布超过阈值。采用轮询方式选择结果频率最低的实例（$\min(\mathcal{F}')$），在能效最优和负载公平之间寻求平衡。
 
-这种设计使得EcoRoute能够规避batch size边界处的频率悬崖，实现比简单轮询更高的能效。
+阈值$\Delta$的设计是为了防止负载过度倾斜。如果不同实例的频率差异过大，可能导致某些实例持续高负载而其他实例空闲，反而降低整体效率。通过设置合理的$\Delta$值（如500 MHz），EcoRoute在能效优化和负载均衡之间取得平衡。
+
+这种设计使得EcoRoute能够规避batch size边界处的频率悬崖，实现比简单轮询更高的能效。EcoRoute的计算开销极低：主要来自调用EcoPred的延迟预测（每次约0.5 ms），加上简单的决策逻辑，总开销不超过1 ms，对推理服务的请求响应延迟无实质影响。
 
 \section{实验评估}
 
 \subsection{实验设置}
 
-\textbf{实现}。GreenServe在SGLang（v0.4.7）上实现，增加了prefill-decode分离架构支持。EcoFreq使用pyNVML进行低开销频率设置。
+\textbf{实现}。GreenServe在SGLang（v0.4.7）上实现，增加了prefill-decode分离架构支持。EcoFreq使用pyNVML进行低开销频率设置。EcoPred采用XGBoost模型，使用离线profiling数据训练，并支持在线微调。
 
-\textbf{模型和工作负载}。使用Ministral-3B、LLaMA-3.1-8B和Qwen3-32B模型，ShareGPT和LMSYS-Chat-1M工作负载，采用泊松分布控制的请求到达率（RPS）。
+\textbf{模型和工作负载}。使用Ministral-3B、LLaMA-3.1-8B和Qwen3-32B模型，ShareGPT和LMSYS-Chat-1M工作负载，采用泊松分布控制的请求到达率（RPS）。对于Qwen3-32B模型，每个实例使用2路张量并行。
 
-\textbf{指标}。测量TTFT、ITL和SLO达成率。SLO定义为TTFT或ITL的目标上限。报告通过pyNVML测量的端到端能耗。
+\textbf{指标}。测量TTFT、ITL和SLO达成率。SLO定义为TTFT或ITL的目标上限，达成率指满足这些约束的请求百分比（$\text{TTFT}\le S_P$，$\text{ITL}\le S_D$）。报告通过pyNVML测量的端到端能耗。
 
 \textbf{硬件}。在通过NVLink连接的NVIDIA A100-80G SXM4 GPU上进行实验。
 
-\textbf{基线}。构建两个基于SGLang的基线：SGLang-1005（静态1005 MHz，能效甜点）和SGLang-1410（静态1410 MHz，最大频率，A100默认策略）。这些基线使用SGLang的默认轮询路由。
+\textbf{基线}。构建两个基于SGLang的基线：SGLang-1005（静态1005 MHz，能效甜点）和SGLang-1410（静态1410 MHz，最大频率，A100默认策略）。这些基线使用SGLang的默认轮询路由。虽然DynamoLLM和ThrottLL'eM是最相关的工作，但由于缺乏公开代码，无法进行直接比较。
 
 \subsection{主要结果}
 
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/main_result_combined.pdf}
+    \caption{GreenServe与基线在不同模型和数据集上的TTFT/ITL SLO达成率和端到端能耗对比。GreenServe持续保持与SGLang-1410相当的SLO达成率，同时显著降低能耗。}
+    \label{fig:main-result}
+\end{figure*}
+
 使用2P2D（2个prefill实例和2个decode实例）配置进行评估。频率选项设置为$\mathcal{F}=\{1005, 1410\}$ MHz，路由阈值$\Delta=500$。TTFT/ITL SLO分别设置为：Ministral-3B 200/20 ms，LLaMA-3.1-8B 600/60 ms，Qwen3-32B 1200/120 ms。
 
-实验结果得出两个关键发现：
+图\ref{fig:main-result}展示了主要实验结果，得出两个关键发现：
 
-首先，GreenServe在各模型上持续达到与SGLang-1410（静态最大频率）相当的TTFT SLO达成率和相当或略好的ITL SLO达成率，同时显著优于SGLang-1005。这种高SLO达成率归功于EcoFreq的SLO感知设计——它自适应地为每个引擎迭代选择GPU频率，确保推理时间保持在预算内。
+首先，GreenServe在各模型上持续达到与SGLang-1410（静态最大频率）相当的TTFT SLO达成率和相当或略好的ITL SLO达成率，同时显著优于SGLang-1005。这种高SLO达成率归功于EcoFreq的SLO感知设计——它自适应地为每个引擎迭代选择GPU频率，确保推理时间保持在预算内。值得注意的是，在某些情况下GreenServe的ITL SLO达成率甚至略好于SGLang-1410，这归功于EcoRoute——它允许一个实例避免跨越batch size边界和"频率悬崖"，代价是另一个实例轻微的ITL增加，但整体ITL分布更优。
 
-其次，在能耗方面，GreenServe相比SGLang-1410实现了高达36.3\%的能耗降低。值得注意的是，在某些情况下GreenServe的ITL SLO达成率甚至略好于SGLang-1410，这归功于EcoRoute——它允许一个实例避免跨越batch size边界和"频率悬崖"，代价是另一个实例轻微的ITL增加。
+其次，在能耗方面，GreenServe相比SGLang-1410实现了高达36.3\%的能耗降低。这一峰值降低出现在Qwen3-32B配合ShareGPT数据集、RPS为20的配置下。能效提升在低请求率时最为显著，因为此时静态低频率已足够满足SLO目标，GreenServe动态地在大部分时间运行于低频。相反，在高请求率时，系统需要更频繁地提升频率以维持SLO达成，能效提升相对较小但仍显著。
+
+\subsection{各组件贡献分析}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/ablation_w_router-2p2d.pdf}
+    \caption{EcoFreq-only和完整GreenServe对比。EcoFreq降低了prefill和decode的能耗，EcoRoute为decode阶段带来额外的能耗降低。}
+    \label{fig:sys-design-each-module}
+\end{figure}
+
+为量化各组件的贡献，我们比较两种配置：仅使用EcoFreq（不包含EcoRoute）和完整的GreenServe。图\ref{fig:sys-design-each-module}展示了使用ShareGPT数据集和LLaMA-3.1-8B模型的结果。
+
+EcoFreq-only相比SGLang-1410为prefill和decode实例都实现了显著的能耗降低，验证了其SLO感知频率控制策略的有效性。完整的GreenServe相比EcoFreq-only进一步降低了能耗，这一增益仅体现在decode阶段，因为EcoRoute仅应用于decode实例的路由决策。
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{figures/ablation-freq-time-combined.pdf}
+    \caption{EcoFreq-only在不同请求率下的实时频率跟踪。低RPS时实例主要运行于低频；高RPS时更多时间处于高频以满足SLO。}
+    \label{fig:freq-time}
+\end{figure}
+
+图\ref{fig:freq-time}展示了不同请求率下的实时频率分布。在低RPS（如25）时，prefill和decode实例大部分时间运行于1005 MHz；随着RPS增加，两个阶段都更频繁地切换到1410 MHz以满足SLO约束。这种动态适应正是GreenServe能效优势的关键来源。
+
+\subsection{SLO敏感性分析}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{figures/ablation-slo.pdf}
+    \caption{GreenServe与基线在不同SLO配置下的对比（low: 400/40ms, medium: 600/60ms, high: 800/80ms）。GreenServe在所有设置下都保持高SLO达成率并实现显著能耗节省。}
+    \label{fig:slo-sensitivity}
+\end{figure}
+
+我们评估GreenServe在不同SLO目标下的表现。使用LLaMA-3.1-8B和ShareGPT数据集，测试三种TTFT/ITL SLO配置：400/40 ms（低）、600/60 ms（中）、800/80 ms（高）。
+
+图\ref{fig:slo-sensitivity}的结果表明，在所有SLO配置下，GreenServe持续达到与SGLang-1410相当或略好的SLO达成率。具体而言，随着SLO约束放宽（从"低"到"高"），GreenServe的自适应频率控制以更高的延迟换取更低的能耗。这展示了延迟-能耗权衡的灵活性，使得用户可以根据场景需求定制阶段特定的SLO——例如，优先保证低ITL以提高响应性，或优先降低能耗以减少成本。这一结果进一步强调了阶段感知设计的必要性。
+
+\subsection{频率控制粒度分析}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{figures/ablation-interval.pdf}
+    \caption{不同频率控制间隔下的SLO达成率。迭代级控制提供最佳响应性和最高的SLO达成率。}
+    \label{fig:time-window}
+\end{figure}
+
+如\ref{subsec:temporal-variation}节所述，LLM服务中存在快速的迭代级负载波动，这促使我们采用迭代级频率控制。为验证其必要性，我们将EcoFreq适配到不同的固定时间间隔（如5秒），并与迭代级控制进行比较。使用ShareGPT数据集和LLaMA-3.1-8B，在1P1D配置下（EcoRoute无效果）进行评估。
+
+图\ref{fig:time-window}的结果清楚地表明，基于时间窗口的频率控制显著降低了两个阶段的SLO达成率。迭代级频率响应对于prefill阶段尤为关键——由于动态批处理，prefill批次的token总数（以及因此的最优频率）可能在相邻迭代间剧烈变化。基于窗口的方法无法及时响应这种快速变化。相比之下，decode实例的负载（批处理请求数）变化相对平滑，对窗口间隔设置不太敏感。
+
+\subsection{预测器精度验证}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.85\columnwidth]{figures/prediction_error.pdf}
+    \caption{EcoPred的TTFT和ITL预测平均绝对误差（MAE），比较离线模型和在线自适应模型。}
+    \label{fig:pred-accuracy}
+\end{figure}
+
+EcoFreq的有效性依赖于EcoPred的预测精度。我们比较预测值与实际延迟，评估离线训练模型和在线自适应模型的精度。
+
+图\ref{fig:pred-accuracy}展示了所有模型的预测平均绝对误差（MAE）。TTFT和ITL预测都持续实现低MAE，使EcoFreq能够进行准确的频率选择。更重要的是，在线自适应相比纯离线模型实现了明显的MAE改进，成功缓解了样本分布偏移问题。这种在线适应能力是GreenServe在动态工作负载下保持稳定性能的关键。
 
 \subsection{泛化性验证}
 
-为验证GreenServe的泛化能力，在NVIDIA GH200 Grace Hopper超级芯片上使用Qwen3-32B和ShareGPT数据集进行评估。
+为验证GreenServe的泛化能力，在NVIDIA GH200 Grace Hopper超级芯片上使用Qwen3-32B（不使用张量并行）和ShareGPT数据集进行评估。
 
-GH200展现出与A100相似但不同的U型能耗-频率曲线：prefill的能耗甜点为1095 MHz，decode为1395 MHz，最大频率为1980 MHz。相应地，设置EcoFreq的频率选项为$\mathcal{F}_P=\{1095, 1980\}$ MHz和$\mathcal{F}_D=\{1395, 1980\}$ MHz。基线为SGLang-1980（固定最大频率）和SGLang-Sweet（P/D实例分别固定在其甜点）。
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/gh200_result.pdf}
+    \caption{GreenServe在GH200上的SLO达成率和端到端能耗，使用Qwen3-32B和ShareGPT数据集。}
+    \label{fig:exp-gh200}
+\end{figure}
 
-结果表明，GreenServe在新硬件上同样保持了相当的延迟SLO达成率和显著的能耗节省，验证了其跨硬件的泛化能力。
+GH200展现出与A100相似但不同的U型能耗-频率曲线：prefill的能耗甜点为1095 MHz，decode为1395 MHz，最大频率为1980 MHz。这一差异源于GH200不同的架构和功耗特性。相应地，设置EcoFreq的频率选项为$\mathcal{F}_P=\{1095, 1980\}$ MHz和$\mathcal{F}_D=\{1395, 1980\}$ MHz。基线为SGLang-1980（固定最大频率）和SGLang-Sweet（P/D实例分别固定在其甜点）。
+
+图\ref{fig:exp-gh200}的结果表明，GreenServe在新硬件上同样保持了相当的延迟SLO达成率和显著的能耗节省，验证了其跨硬件的泛化能力。这一结果特别重要，因为它表明GreenServe的设计原则和方法论具有普适性，能够适应不同代际和架构的GPU。
 
 \section{本章小结}
 
 本章针对大模型推理服务的能效优化问题，提出了GreenServe系统。通过系统性的实证分析，首次揭示了LLM推理的非单调U型能耗-频率曲线和架构粒度导致的能效阶梯现象。基于这些发现，设计了EcoPred延迟预测器、EcoFreq迭代级频率控制器和EcoRoute状态空间路由器三项核心技术，实现了毫秒级响应的精细化能效控制。在多个模型和真实负载下的实验表明，GreenServe在保障SLO的前提下实现了最高36.3\%的能耗降低，且能泛化到新一代GPU硬件。
 
 本章的主要贡献包括：（1）发现并建模了LLM推理的U型能耗-频率关系和阶段敏感性差异；（2）首次实现了prefill-decode分离架构下的迭代级响应式频率控制；（3）提出了状态空间引导的请求路由策略，规避架构粒度导致的能效损失。
+
+GreenServe的工作为LLM服务的可持续发展提供了新的技术路径。通过精细化的能效控制，数据中心可以在不扩展电力基础设施的前提下支撑更大规模的模型部署。未来，随着GPU架构的不断演进和LLM应用场景的持续扩展，能效优化将成为服务系统设计的核心考量因素之一。

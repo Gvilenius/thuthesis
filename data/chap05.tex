@@ -1,4 +1,4 @@
- % !TeX root = ../main.tex
+% !TeX root = ../main.tex
 
 \chapter{CATFlow: 基于数据一元论抽象的分布式训练策略自动发现框架}
 
@@ -69,6 +69,7 @@
 为了克服以算子为中心抽象的局限性，CATFlow 引入了一种全新的表示方法——约束感知张量（Constraint-Aware Tensor, CAT）。这一抽象体系建立在“数据一元论”的基础之上，将并行计划的本质还原为数据在时空维度上的轨迹规划。
 
 \subsection{约束感知张量（CAT）}
+
 CAT 是 CATFlow 框架中的基本图元，它不仅仅代表计算图中的静态数据块，更封装了数据在整个生命周期内的动态行为。一个 CAT 可以形式化地定义为一个包含三个核心要素的元组：
 \begin{itemize}
     \item \textbf{张量实体（Tensor Entity）}：代表计算图中的数据对象，包括持久化的模型参数（Parameters）、瞬时的中间激活值（Activations）以及梯度（Gradients）。
@@ -77,15 +78,24 @@ CAT 是 CATFlow 框架中的基本图元，它不仅仅代表计算图中的静�
         \item \textbf{空间坐标}：不仅包含 GPU 设备 ID，还扩展到了 CPU 内存、NVMe 存储等层级，支持异构存储的统一建模。
         \item \textbf{时间坐标}：采用 Lamport 逻辑时间戳（Logical Timestamp），反映了计算图执行的因果顺序（Causal Order），而非物理时钟时间。
     \end{itemize}
-    \item \textbf{约束集合（Constraint Set）}：规定了张量与其时空坐标之间的关系，决定了张量“何时”在“何地”存在。
+    \item \textbf{约束集合（Constraint Set）}：规定了张量与其时空坐标之间的关系，决定了张量”何时”在”何地”存在。
     \begin{itemize}
         \item \textbf{张量内约束（Intra-tensor Constraint）}：限制单个张量在不同时空坐标间的轨迹，负责管理其生命周期（创建、销毁）和移动（传输、复制）。
         \item \textbf{张量间约束（Inter-tensor Constraint）}：定义了多个张量之间的依赖关系。例如，计算操作被建模为一种约束：所有输入张量必须在同一时空坐标汇聚，才能触发输出张量的生成。
     \end{itemize}
 \end{itemize}
 
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/catflow-abstractions.pdf}
+    \caption{约束感知张量（CAT）抽象示意图。CAT封装了张量实体、时空坐标和约束集合三个核心要素，实现了对数据生命周期的统一建模。}
+    \label{fig:cat-abstract}
+\end{figure}
+
+图\ref{fig:cat-abstract}展示了CAT抽象的核心概念。与传统方法将张量视为静态数据块不同，CAT显式地跟踪张量在时空维度上的完整轨迹，使得系统能够精确控制数据的生命周期和移动路径。
+
 \subsection{轨迹向量表示}
-在 CATFlow 中，我们使用一系列有序的**约束点（Constraint Points）**组成的**约束向量（Constraint Vector）**来描述一个 CAT 的完整时空轨迹。
+在 CATFlow 中，我们使用一系列有序的\textbf{约束点（Constraint Points）}组成的\textbf{约束向量（Constraint Vector）}来描述一个 CAT 的完整时空轨迹。
 例如，对于 Transformer 模型中前馈网络（FFN）层的某个激活值张量 $A$，其轨迹可以表示为：
 \begin{equation}
     C_{A} = [(\text{Device}_2, t_1), (\text{Device}_2, t_2), (\text{Device}_3, t_3)]
@@ -169,9 +179,18 @@ P(T)=\sum_{i=1}^{n}P(E_{i})+\sum_{T^{\prime}\in\mathcal{A}(T)}\sum_{j=1}^{m}P(E_
 
 \subsection{代表性的新发现计划 (Representative Newly Discovered Plans)}
 
-在本节中，我们介绍由 CATFlow 自动发现的两个代表性策略：ZeRO-3.5 和 ZeRO-4（详细的搜索分析在第 7.3 节）。相比于 ZeRO-3（在整个训练过程中对权重进行分片，因此在前向和反向传递中都需要 all-gather 来组装完整权重），ZeRO-3.5 在反向传递期间不对收集到的权重进行重新分片（reshard）。相反，这些收集到的权重被保留并在下一个累积步骤的前向传递中重用，从而消除了前向 all-gather 通信。如图 4(c) 所示，在反向传递期间，ZeRO-3.5 回收逐步释放的激活值（activations）所占用的内存，并利用它来保存收集到的权重分片；当总激活内存超过总权重内存时，ZeRO-3.5 在实现与 ZeRO-3 相同的峰值内存的同时，消除了前向 all-gather 通信（图 4(b) 中的 1 block/step）。
+在本节中，我们介绍由 CATFlow 自动发现的两个代表性策略：ZeRO-3.5 和 ZeRO-4。
 
-在 ZeRO-3.5 的基础上，ZeRO-4 进一步选择性地推迟梯度的 reduce-scatter 操作（在 CATFlow 中通过 \texttt{order($A[j]^{ms+1}\{-1\}, G[j]^{ms}\{0\}$)} 实现）。这允许部分梯度在反向传播期间保留在本地设备上，而不是立即进行通信；reduce-scatter 被推迟到下一次前向传递。如图 4(d) 所示，在反向传播期间，激活值被逐步释放，释放出的内存用于容纳收集到的权重和推迟的梯度。在随后的前向传递中，梯度被归约，权重被丢弃，以释放内存用于新生成的激活值。在图 4(d) 中，我们每三层保留两层的梯度（选择 $j$ 为 3 的倍数）；实际上，$j$ 可以根据实际资源使用情况进行调整。ZeRO-4 实现了比 ZeRO-3.5 更均衡的反向-前向通信模式（图 4(d) 中的 0.67 block/step），这可以从更好的通信-计算重叠中受益。第 7 节展示了 CATFlow 发现的更多计划。
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/catflow-zero-comparison.pdf}
+    \caption{ZeRO-2、ZeRO-3、ZeRO-3.5和ZeRO-4策略的内存占用与平均通信量随时间变化对比。ZeRO-3.5通过在反向传播期间驻留已收集的权重，消除了前向all-gather通信；ZeRO-4进一步延迟梯度的reduce-scatter，实现了更均衡的通信模式。}
+    \label{fig:zero-comparison}
+\end{figure}
+
+如图\ref{fig:zero-comparison}所示，相比于 ZeRO-3（在整个训练过程中对权重进行分片，因此在前向和反向传递中都需要 all-gather 来组装完整权重），ZeRO-3.5 在反向传递期间不对收集到的权重进行重新分片（reshard）。相反，这些收集到的权重被保留并在下一个累积步骤的前向传递中重用，从而消除了前向 all-gather 通信。在反向传递期间，ZeRO-3.5 回收逐步释放的激活值（activations）所占用的内存，并利用它来保存收集到的权重分片；当总激活内存超过总权重内存时，ZeRO-3.5 在实现与 ZeRO-3 相同的峰值内存的同时，消除了前向 all-gather 通信。
+
+在 ZeRO-3.5 的基础上，ZeRO-4 进一步选择性地推迟梯度的 reduce-scatter 操作（在 CATFlow 中通过 \texttt{order($A[j]^{ms+1}\{-1\}, G[j]^{ms}\{0\}$)} 实现）。这允许部分梯度在反向传播期间保留在本地设备上，而不是立即进行通信；reduce-scatter 被推迟到下一次前向传递。在反向传播期间，激活值被逐步释放，释放出的内存用于容纳收集到的权重和推迟的梯度。在随后的前向传递中，梯度被归约，权重被丢弃，以释放内存用于新生成的激活值。ZeRO-4 实现了比 ZeRO-3.5 更均衡的反向-前向通信模式，这可以从更好的通信-计算重叠中受益。
 
 \section{实验评估}
 
@@ -205,21 +224,41 @@ ZeRO-4在中等等延迟梯度比例（1:3）时获得最佳性能。较低的�
 
 \subsection{搜索过程分析}
 
-CATFlow的搜索过程构建了一系列连接初始策略到最终策略的中间策略。在数据一元论抽象下，ZeRO-3中的每个all-gather操作创建一个Weight Buffer CAT，从对等设备收集权重分片。从ZeRO-3到ZeRO-3.5的转换是逐步延迟反向传播期间Weight Buffer CAT的释放事件，直到到达相应的前向层。此时，自动管理选择驻留在本地设备上的Weight Buffer，而不是从其他设备all-gather权重。
+CATFlow的搜索过程构建了一系列连接初始策略到最终策略的中间策略，每一步都对应着CAT轨迹约束的局部调整。下面以ZeRO-3→ZeRO-3.5→ZeRO-4的搜索路径为例，具体说明势能下降的工作机制。
 
-从ZeRO-3到ZeRO-3.5的转换构成了自然的势能下降过程，使ZeRO-3.5具有较高的可达性。相比之下，获得ZeRO-4更具挑战性。将反向Weight Gradient Buffer延迟到后续前向传递对许多层并不产生单调递减的通信负载，而内存占用随延迟增长且无法应用吸引规则。因此，在自动搜索中优化Weight Gradient Buffer主要用于揭示有希望的方向，而非直接产生最终的ZeRO-4策略。
+\textbf{从ZeRO-3到ZeRO-3.5的转换}。在数据一元论抽象下，ZeRO-3中的每个all-gather操作创建一个Weight Buffer CAT，负责从其他设备收集本层的权重分片。在ZeRO-3中，Weight Buffer在反向传播的该层计算完成后立即被释放（即\texttt{assign}的时间约束在反向传播结束后立即触发销毁事件）。
+
+CATFlow的搜索从观察到反向传播期间激活值逐层释放、释放的内存空间可以被复用开始。通过对Weight Buffer CAT施加\texttt{order}原语——强制延迟其释放事件，使其驻留到下一次前向传播的对应层——搜索算法发现一个势能下降点：延迟释放后，Weight Buffer可以在下次前向传播直接被复用，无需重新执行all-gather通信，从而降低了通信带宽压力（势能）。这一转换是逐层进行的：搜索首先延迟第$L$层的Weight Buffer，然后逐步延迟至第$L-1$层、$L-2$层……每一步都验证内存使用仍在容量范围内，最终形成完整的ZeRO-3.5策略。
+
+从ZeRO-3到ZeRO-3.5的转换构成了自然的单调势能下降过程（每延迟一层的Weight Buffer，通信量单调减少），使ZeRO-3.5具有较高的搜索可达性，搜索算法能够以稳定的梯度引导收敛到这一策略。
+
+\textbf{从ZeRO-3.5到ZeRO-4的转换}。获得ZeRO-4更具挑战性。ZeRO-4的核心是通过\texttt{order}原语延迟Weight Gradient Buffer（梯度）的reduce-scatter操作，将部分反向通信推迟到下一次前向传播阶段，以改善通信-计算重叠。
+
+然而，将Weight Gradient Buffer延迟到后续前向传递时，对于许多层并不产生单调递减的通信负载——取决于模型层数、梯度累积步数和硬件带宽配置，延迟某些层的梯度可能使前向传播阶段的通信压力过大，反而降低性能。此外，随着延迟比例增加，内存占用也随之增长（需要同时保留更多层的梯度），且吸引规则（鼓励CAT驻留在产生它的设备）不适用于梯度的情况。因此，ZeRO-4的搜索路径不是单调下降的，而是需要在特定超参数（延迟梯度比例）下才能找到性能提升的配置点。
+
+在实际搜索中，CATFlow对Weight Gradient Buffer的优化主要用于揭示有希望的探索方向，并确定最优的延迟梯度比例（约1:3），而非直接输出最终ZeRO-4策略——后者需要结合实际测量对超参数进行调优。
 
 \subsection{综合探索}
 
 \subsubsection{七个搜索方向}
 
-从ZeRO-3开始，数据中心的基于势能的搜索在各种模型和硬件配置下识别出七个有意义的调度优化方向：方向1表示ZeRO-3.5策略，即延迟反向权重的释放；方向2表示ZeRO-4策略，即延迟梯度的reduce-scatter；方向3涉及为反向传播保留部分前向权重，以增加内存使用为代价降低反向通信，作为ZeRO-2和ZeRO-3之间的中间策略；方向4-7涉及卸载策略，包括在主机内存中存储优化器状态、预加载优化器状态到GPU、在优化器状态预加载前后使用不同micro-batch大小，以及将权重卸载到主机内存。
+从ZeRO-3作为初始点，CATFlow基于势能下降的搜索在各种模型（8B、14B、32B）和硬件配置（A100-NVLink、H20-NVLink、H800-PCIe、A100-PCIe）下，系统性地识别出七个有意义的调度优化方向：
+
+\textbf{方向1（ZeRO-3.5）}：延迟反向传播期间收集的权重（Weight Buffer CAT）的释放，使其驻留到下一次前向传播以消除前向all-gather通信。这是势能下降最直接的路径，对所有硬件配置均有益。
+
+\textbf{方向2（ZeRO-4）}：延迟梯度（Weight Gradient Buffer CAT）的reduce-scatter操作，将部分反向通信推迟到前向传播阶段，实现更均衡的通信-计算重叠。在通信带宽较低的配置（如PCIe）下效果更显著。
+
+\textbf{方向3}：为反向传播保留部分前向传播阶段收集的权重，以适当增加内存使用为代价降低反向通信量，构成ZeRO-2和ZeRO-3之间的中间策略。当反向通信是瓶颈且GPU内存有余裕时，这是有价值的权衡点。
+
+\textbf{方向4-7（卸载策略）}：涉及与主机（CPU）内存的协同利用，包括：在主机内存中存储优化器状态（方向4）；在最后一次梯度累积前预加载优化器状态到GPU并执行GPU端更新（方向5）；在优化器状态预加载前后自适应调整micro-batch大小（方向6）；以及将权重也卸载到主机内存以支持更大模型（方向7）。这些方向在GPU内存受限（如A100-PCIe 40GB）的场景下尤为重要。
 
 \subsubsection{新型卸载策略}
 
-在这些方向的指导下，提出一种新的卸载策略PTD-offload，结合方向3-6。该策略利用可用的GPU内存在batch的最终反向传播之前预加载优化器状态到GPU，在GPU上执行优化器更新，然后直接丢弃优化器状态。同时，CPU执行冗余的优化器状态更新，但GPU不等待CPU结果；它们继续进行下一个batch的梯度累积，稍后在可用时加载CPU更新的状态。此外，当优化器状态不在GPU上驻留时，释放的内存可用于增大micro-batch大小以更好地分摊通信并提高利用率，以及保留前向权重供反向传播重用。
+在这七个方向的指导下，CATFlow提出了PTD-offload（Pre-Training-then-Discard Offload）策略，整合了方向3至6的洞察。该策略的核心设计思想是充分利用梯度累积过程中GPU内存使用的动态变化：在梯度累积前期，优化器状态不在GPU上驻留，释放的显存可用于增大micro-batch大小（更好地分摊通信开销）和保留前向权重（减少反向通信）；在梯度累积最后阶段，将优化器状态预加载到GPU并执行高速的GPU端参数更新，之后立即释放优化器状态以恢复显存。
 
-实验结果表明，PTD-offload结合了ZeRO和卸载的优势：在早期累积期间以较大的micro-batch和保留权重开始，然后在预加载优化器状态后转换为完全权重分片。这种分段方法改善了计算-通信重叠，避免了等待CPU端的优化器更新，在大多数设置下产生显著的性能提升。
+具体地，PTD-offload采用CPU-GPU双轨更新机制：GPU完成参数更新后立即释放优化器状态，不等待CPU更新结果；CPU同步执行冗余的优化器状态更新，其结果在下一个batch开始时被加载以修正GPU状态的小误差。这种异步设计完全消除了等待CPU优化器更新的停顿，同时保证了训练的数值正确性。
+
+实验结果表明，PTD-offload在保持与ZeRO-Offload相当显存占用的同时，相比传统ZeRO-Offload基线提升了89.4\%的吞吐量，主要原因是：（1）GPU端参数更新速度远快于CPU，消除了更新等待时间；（2）动态micro-batch调整改善了计算-通信比；（3）权重保留减少了反向传播的all-gather通信量。
 
 \section{本章小结}
 
@@ -227,4 +266,4 @@ CATFlow的搜索过程构建了一系列连接初始策略到最终策略的中�
 
 本章的主要贡献包括：（1）提出数据一元论视角，将并行策略还原为数据在时空维度上轨迹的描述，使计算、存储和通信的协同优化成为可能；（2）设计减法式空间构建方法和势能下降搜索算法，实现新型高效策略的自动探索；（3）自动发现并验证了ZeRO-3.5和ZeRO-4等新型策略，在保持低显存占用的同时相比ZeRO-3实现了最高39.1\%的吞吐量提升；（4）提出并实现了PTD-offload卸载策略，相比传统ZeRO-Offload提升了89.4\%的吞吐量。
 
-CATFlow展示了数据中心抽象的强大表达能力，为并行策略的自动化设计和优化开辟了新路径，对于推动大模型训练技术的普及具有重要意义。
+CATFlow展示了数据一元论抽象的强大表达能力，为并行策略的自动化设计和优化开辟了新路径。通过将视角从"以算子为中心"转向"数据一元论"，CATFlow能够表达和发现那些传统框架难以描述的复杂策略，如涉及细粒度数据轨迹控制、生命周期管理和异构存储协同优化的方案。这对于推动大模型训练技术的普及具有重要意义，使得小规模团队也能够利用自动化工具设计和优化高效的并行策略。
