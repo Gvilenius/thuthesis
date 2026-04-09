@@ -315,7 +315,22 @@ EcoFreq的高效性还体现在其低开销的工程实现上。频率设置通�
 
 阈值$\Delta$的设计是为了防止负载过度倾斜。如果不同实例的频率差异过大，可能导致某些实例持续高负载而其他实例空闲，反而降低整体效率。通过设置合理的$\Delta$值（如500 MHz），EcoRoute在能效优化和负载均衡之间取得平衡。
 
-这种设计使得EcoRoute能够规避batch size边界处的频率悬崖，实现比简单轮询更高的能效。EcoRoute的计算开销极低：主要来自调用EcoPred的延迟预测（每次约0.5 ms），加上简单的决策逻辑，总开销不超过1 ms，对推理服务的请求响应延迟无实质影响。
+这种设计使得EcoRoute能够规避batch size边界处的频率悬崖，实现比简单轮询更高的能效。EcoRoute的计算开销极低：主要来自调用EcoPred的延迟预测（每次约0.5 ms），加上简单的决策逻辑，总开销不超过1 ms，对推理服务的请求响应延迟无实质影响。EcoRoute的完整形式化算法如算法\ref{alg:ecoroute}所示。
+
+\begin{algorithm}[!t]
+\caption{EcoRoute：Decode请求状态空间路由}
+\label{alg:ecoroute}
+\begin{algorithmic}[1]
+    \REQUIRE Decode实例列表$\mathcal{D}=\{d_i\}_{i=1}^n$及其状态列表$\mathcal{M}=\{m_i\}_{i=1}^n$，待路由请求$r$，EcoFreq频率决策函数$\mathrm{freq}(\cdot)$，频率阈值$\Delta$
+    \ENSURE 选定的Decode实例$d \in \mathcal{D}$
+    \STATE $\mathcal{F} \leftarrow \{\mathrm{freq}(m_i)\}_{i=1}^n$ \hfill\COMMENT{各实例当前频率}
+    \STATE $\mathcal{F}' \leftarrow \{\mathrm{freq}(m_i \oplus r)\}_{i=1}^n$ \hfill\COMMENT{假设添加请求$r$后的预测频率}
+    \IF{部分（非全部）实例频率变化 \textbf{且} $\max(\mathcal{F}')-\min(\mathcal{F}') \le \Delta$}
+        \RETURN $d_{\arg\min_i \{\text{频率未变的实例中负载最低者}\}}$ \hfill\COMMENT{情况1：保护低频实例}
+    \ENDIF
+    \RETURN 以$d_{\arg\min_i \mathcal{F}'}$为起点的轮询结果 \hfill\COMMENT{情况2：其他情况，选结果频率最低实例}
+\end{algorithmic}
+\end{algorithm}
 
 \section{实验评估}
 
@@ -323,7 +338,21 @@ EcoFreq的高效性还体现在其低开销的工程实现上。频率设置通�
 
 \textbf{实现}。GreenServe在SGLang（v0.4.7）上实现，增加了prefill-decode分离架构支持。EcoFreq使用pyNVML进行低开销频率设置。EcoPred采用XGBoost模型，使用离线profiling数据训练，并支持在线微调。
 
-\textbf{模型和工作负载}。使用Ministral-3B、LLaMA-3.1-8B和Qwen3-32B模型，ShareGPT和LMSYS-Chat-1M工作负载，采用泊松分布控制的请求到达率（RPS）。对于Qwen3-32B模型，每个实例使用2路张量并行。
+\textbf{模型和工作负载}。使用Ministral-3B、LLaMA-3.1-8B和Qwen3-32B模型，ShareGPT和LMSYS-Chat-1M工作负载，采用泊松分布控制的请求到达率（RPS）。对于Qwen3-32B模型，每个实例使用2路张量并行。表\ref{tab:dataset-stats}汇总了两个数据集的输入/输出长度统计特征：ShareGPT的prefill长度显著长于LMSYS，prefill/decode比例也更高，代表更重的计算密集型工作负载。
+
+\begin{table}[!t]
+    \centering
+    \caption{实验数据集的输入输出长度分布统计（均值和标准差）}
+    \label{tab:dataset-stats}
+    \begin{tabular}{l|cccc}
+        \toprule
+        \textbf{数据集} & \textbf{Prefill均值} & \textbf{Prefill标准差} & \textbf{Decode均值} & \textbf{Decode标准差} \\
+        \midrule
+        ShareGPT & 280.3 & 375.6 & 190.9 & 209.2 \\
+        LMSYS    & 78.4  & 133.3 & 174.6 & 166.1 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \textbf{指标}。测量TTFT、ITL和SLO达成率。SLO定义为TTFT或ITL的目标上限，达成率指满足这些约束的请求百分比（$\text{TTFT}\le S_P$，$\text{ITL}\le S_D$）。报告通过pyNVML测量的端到端能耗。
 
@@ -424,7 +453,110 @@ GH200展现出与A100相似但不同的U型能耗-频率曲线：prefill的能�
 
 图\ref{fig:exp-gh200}的结果表明，GreenServe在新硬件上同样保持了相当的延迟SLO达成率和显著的能耗节省，验证了其跨硬件的泛化能力。这一结果特别重要，因为它表明GreenServe的设计原则和方法论具有普适性，能够适应不同代际和架构的GPU。
 
-\section{本章小结}
+为完整呈现GH200上的U型曲线特征，图\ref{fig:u-shape-gh200}展示了GH200的能耗-频率和延迟-频率曲线。与A100类似，两个阶段均呈现U型能耗-频率关系，但甜点位置不同：prefill在约1095 MHz，decode在约1395 MHz，最大频率1980 MHz时prefill接近GH200的900W TDP限制。
+
+\begin{figure}[!t]
+    \centering
+    \begin{subfigure}[b]{0.48\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/gs-prefill-gh200.pdf}
+        \caption{Prefill阶段}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/gs-decode-gh200.pdf}
+        \caption{Decode阶段}
+    \end{subfigure}
+    \caption{GH200上Qwen3-32B的GPU频率对能耗和延迟的影响。两个阶段都呈现U型能耗-频率曲线，但能耗甜点位置不同：prefill约1095 MHz，decode约1395 MHz。Prefill在约1600 MHz时触达GH200的900W TDP限制。}
+    \label{fig:u-shape-gh200}
+\end{figure}
+
+\subsection{阶段特定能效增益分析}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/gs-phase-specific.pdf}
+    \caption{GreenServe（LLaMA-3.1-8B@ShareGPT）在不同RPS下的阶段特定能效增益分解。低RPS时decode贡献更多节能，高RPS时prefill阶段节能占主导。}
+    \label{fig:phase-specific}
+\end{figure}
+
+为深入理解GreenServe节能的来源，图\ref{fig:phase-specific}将LLaMA-3.1-8B@ShareGPT配置下的能效增益分解到prefill和decode两个阶段。
+
+结果呈现出明显的负载依赖规律：在低请求率（低RPS）下，decode阶段贡献更大的能效增益。这是因为decode阶段的算术强度较低（内存受限），在低负载时EcoFreq能够长时间维持低频运行，节能效果显著。相比之下，在高RPS下，prefill阶段对整体节能的贡献更大。这一变化源于EcoFreq对prefill阶段内短暂低负载窗口的精细利用——即使在整体高负载情况下，动态批处理导致某些迭代的token数较少，EcoFreq抓住这些时机将频率暂时降低，从而实现节能。而此时decode实例为维持严格的ITL SLO不得不持续运行于较高频率，节能空间相对有限。
+
+\subsection{EcoRoute与轮询路由的对比示例}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/gs-router-example.pdf}
+    \caption{EcoRoute与轮询路由的实际运行对比（RPS=75）。每条线代表一个decode实例。EcoRoute使一个实例的batch size长时间保持在边界（256）以下，从而以较低频率运行，实现更高能效。}
+    \label{fig:router-example}
+\end{figure}
+
+图\ref{fig:router-example}通过实际运行轨迹展示了EcoRoute相比轮询路由的工作差异。在相同请求率（RPS=75）下，轮询路由导致两个decode实例的batch size均在256边界附近甚至超越，两者都被迫提高频率。而EcoRoute通过"what-if"分析和非对称分配策略，将一个实例的batch size稳定维持在256以下，使其持续运行于低频，整体能耗更低，同时另一个实例承担了更多请求但SLO仍然满足。
+
+\subsection{与中间静态频率基线的对比}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/gs-multi-freq.pdf}
+    \caption{GreenServe与中间静态频率（1095/1200/1305 MHz）基线的对比（LLaMA-3.1-8B，ShareGPT）。静态中间频率在低RPS时无法充分节能，在高RPS时导致SLO下降。}
+    \label{fig:static-intermediate}
+\end{figure}
+
+为验证静态频率调优是否足够，图\ref{fig:static-intermediate}将GreenServe与三个中间静态频率基线（1095、1200、1305 MHz）进行对比。
+
+结果表明，静态中间频率配置在两个极端场景下均存在问题：在低RPS时，由于频率固定，无法根据负载进一步降低，能耗显著高于GreenServe；在高RPS时，固定的中间频率无法提供足够的计算吞吐量，导致SLO达成率下降。这验证了动态自适应频率控制相对于任何静态配置（无论选择何种频率值）的本质优势：静态策略是针对单一工作点的优化，而GreenServe能够在整个负载范围内持续保持高能效和高SLO达成率。
+
+\subsection{与功率上限基线的对比}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/gs-power-capped.pdf}
+    \caption{GreenServe与350W功率上限SGLang基线的对比（LLaMA-3.1-8B，ShareGPT，默认功率上限400W）。功率上限方案在低RPS时节能不足，在高RPS时导致SLO违反。}
+    \label{fig:power-capped}
+\end{figure}
+
+图\ref{fig:power-capped}将GreenServe与功率上限基线（350W固定功率上限）进行对比，以评估功率上限是否可以作为频率控制的替代方案。
+
+功率上限本质上是对频率的间接约束，而非响应式的频率控制机制。结果显示，350W功率上限在低RPS时仍比GreenServe消耗更多能量（因为它无法将频率降至真正的能效甜点），而在高RPS时，固定的功率上限阻止了系统在需要时提升频率，导致SLO达成率下降。这进一步验证了响应式频率控制相对于静态功率管理策略的优越性。
+
+\subsection{P/D吞吐量需求比例变化}
+
+\begin{figure}[!t]
+    \centering
+    \begin{subfigure}[b]{0.43\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/gs-pd-ratio-load.pdf}
+        \caption{合成数据集P/D负载变化}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.53\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/gs-pd-ratio-freq.pdf}
+        \caption{GreenServe各实例频率动态}
+    \end{subfigure}
+    \caption{变化P/D吞吐量需求比例下GreenServe的自适应行为。当prefill需求高时prefill实例升频，decode实例降频；反之亦然。}
+    \label{fig:pd-ratio-vary}
+\end{figure}
+
+如\ref{subsec:temporal-variation}节所分析，真实LLM工作负载中prefill-decode吞吐量需求比例随时间变化，是设计阶段感知频率控制的核心动机。为验证GreenServe在需求比例动态变化场景下的自适应能力，使用合成数据集（P/D需求比例在5分钟内循环变化）进行评估。
+
+图\ref{fig:pd-ratio-vary}展示了P/D需求比例变化时GreenServe各实例的频率动态响应。当prefill吞吐量需求升高时，prefill实例适时升频以满足TTFT SLO，而decode实例在吞吐压力较小时保持低频运行；反之，当decode需求更高时，decode实例升频而prefill实例降频。这种阶段感知的独立控制正是GreenServe相对于统一频率控制策略的核心优势，确保在工作负载特征动态变化的情况下持续保持高能效。
+
+\subsection{更多频率级别的分析}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/gs-multi-level.pdf}
+    \caption{GreenServe双频级别（2L，默认）与五频级别（5L，$\mathcal{F}=\{1005,1095,1200,1305,1410\}$ MHz）的对比。对于prefill，更细粒度的频率级别收益微乎其微；对于decode，细粒度频率带来轻微额外节能但以降低SLO为代价。}
+    \label{fig:multi-level}
+\end{figure}
+
+GreenServe默认采用两个频率级别（能效甜点和最大频率）。为分析更多频率级别是否能带来额外收益，图\ref{fig:multi-level}将双频级别与五频级别（$\mathcal{F}=\{1005, 1095, 1200, 1305, 1410\}$ MHz）进行对比。
+
+对于prefill阶段，由于负载在相邻迭代间剧烈波动，中间频率级别被大量使用的机会极少，增加频率级别的收益可以忽略不计。对于decode阶段，更细粒度的频率确实能带来轻微额外节能，但代价是SLO达成率的小幅下降——这是因为中间频率的精准选择难度更高，在边界附近更容易出现频率选择保守或激进的情况。因此，对于大多数部署场景，双频级别的设计在简单性和效率之间取得了最佳平衡；对于有意愿牺牲少量SLO来换取更大节能的场景，可以考虑引入更多级别并配合精心调整的Delta参数。
 
 本章针对大模型推理服务的能效优化问题，提出了GreenServe系统。通过系统性的实证分析，首次揭示了LLM推理的非单调U型能耗-频率曲线和架构粒度导致的能效阶梯现象。基于这些发现，设计了EcoPred延迟预测器、EcoFreq迭代级频率控制器和EcoRoute状态空间路由器三项核心技术，实现了毫秒级响应的精细化能效控制。在多个模型和真实负载下的实验表明，GreenServe在保障SLO的前提下实现了最高36.3\%的能耗降低，且能泛化到新一代GPU硬件。
 

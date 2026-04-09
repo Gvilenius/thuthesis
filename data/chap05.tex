@@ -139,6 +139,27 @@ CATFlow 采用了“减法式”构建方法。我们首先假设一个包含所
     \item \texttt{not}: 显式排除某些特定的并行计划（例如，禁止将关键路径上的张量卸载到 CPU）。
 \end{itemize}
 
+表\ref{tab:catflow-primitives}汇总了 CATFlow 提供的所有七个原语及其用途，这些原语共同构成了一个完备的并行策略操作代数。
+
+\begin{table}[!t]
+    \centering
+    \caption{CATFlow 数据中心原语体系。七个原语分为张量分布、依赖管理和策略空间划定三类，共同定义并行策略搜索空间。}
+    \label{tab:catflow-primitives}
+    \begin{tabular}{p{0.38\columnwidth} p{0.54\columnwidth}}
+        \toprule
+        \textbf{原语} & \textbf{用途说明} \\
+        \midrule
+        \texttt{split(tensor, split\_vector, split\_tensors)} & 将张量沿指定维度切分，隐式定义算子的并行分区 \\
+        \texttt{assign(tensor, device)} & 将张量分配到指定设备，控制数据的空间轨迹 \\
+        \texttt{copy(src, device, dst, path)} & 将张量复制到目标设备，实现All-Gather等通信模式 \\
+        \texttt{cut(src, device, dst, path)} & 将张量移动到目标设备（移动后源设备释放），实现数据迁移 \\
+        \texttt{reduce(src\_tensors, device, dst, path)} & 将多个张量规约到目标设备，实现梯度聚合 \\
+        \texttt{redirect(tensor1, tensor2, tensor3)} & 修改张量间的数据流向，用于重计算或环状通信 \\
+        \texttt{order(event1, event2)} & 强制两个事件的时序关系，是实现ZeRO-3.5/4的关键 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
 
 \section{并行计划发现 (Parallelism Plan Discovery)}
 
