@@ -1,0 +1,85 @@
+\section{Revision Plan}
+
+\subsection{Additional Experimental Results}
+
+\jiahuan{@Minjia, @Aryan, since the space problem, I put all of these extra experimental data in Appendix}
+
+\subsubsection{Comparison with Intermediate Frequencies (Reviewer 2)}
+
+\textbf{Point Addressed}: The reviewer requested evaluation across more intermediate static frequencies (1095 MHz, 1200 MHz, 1305 MHz).
+\textbf{Action}: add the experimental results comparing \name with SGLang (LLaMA-3.1-8B@ShareGPT) running at these static intermediate frequencies to the analysis results section (\sref{subsec:analysis})
+\jiahuan{done}
+
+\subsubsection{Comparison against Power-Cap Baselines (Reviewer 3)}
+
+\textbf{Point Addressed}: The reviewer requested a comparison against a power-capped baseline rather than just static frequencies.
+\textbf{Action}: add the experimental results comparing \name with SGLang (LLaMA-3.1-8B@ShareGPT) running at these capped powers to the analysis results section (\sref{subsec:analysis})
+\jiahuan{done}
+
+\subsubsection{Phase-Specific Energy Gains and Ablation Study (Reviewer 4)}
+
+\textbf{Point Addressed}: The reviewer asked where the solution brings more gain, decode or prefill.
+\textbf{Action}: add a phase-specific energy decomposition figure to analysis result (\sref{subsec:analysis}). Data comes from the main results.
+
+\jiahuan{@Minjia, @Aryan, During rebuttal, we only provide the data of one model one dataset. Do we need to add data from other models and datasets?}
+\minjia{This will be likely a small analysis section. So one is okay. } \aryan{i agree, i also thinking one model is enough for this result, our main contribution doesn't weaken}
+
+\jiahuan{done}
+
+\subsubsection{Sensitivity of $\Delta$ in Multi-Level Frequencies (Reviewer 4)}
+
+\textbf{Point Addressed}: The reviewer asked about the sensitivity and robustness of \router to the frequency spread threshold $\Delta$.
+\textbf{Action}: add an extended experiment to analysis result section, Comparing \name-5L across $\Delta \in \{110, 210, 310, 410\}$. This will prove that the method is robust to suboptimal choices, though larger $\Delta$ values slightly degrade ITL SLO attainment at high RPS due to imbalance.
+
+\jiahuan{done}
+
+\subsection{Technical Clarifications}
+
+\subsubsection{Clarification of Maximum Energy Savings (Reviewer 1)}
+
+\textbf{Point Addressed}: The derivation of the 36\% energy reduction is unclear in the original draft.
+\textbf{Action}: update \sref{subsec:main-result} to explicitly state the exact configuration where this peak occurs (Qwen-3-32B@ShareGPT, RPS=20), and clarify that the reported energy is end-to-end consumption. \aryan{from the reviews, i felt we can also mention in what cases will voltanallm be most beneficial, i.e, when clusters are running at lower loads}
+\jiahuan{make sense}
+\jiahuan{done}
+
+\subsubsection{Definition of SLO (Reviewer 1)}
+
+\textbf{Point Addressed}: lake clear SLO definition.
+\textbf{Action}: define SLO and attainment rate explicitly in \sref{subsec:main-result}.
+\jiahuan{done}
+
+\subsubsection{Terminology refinement for ``Fine-Grained'' Control (Reviewer 2)}
+
+\textbf{Point Addressed}: The reviewer asked to clarify what ``fine-grained'' means regarding frequency control and which hardware features support it.
+\textbf{Action}: globally replace the ambiguous term ``fine-grained'' with ``per-iteration within LLM inference engine'', also explicitly mention the use of NVIDIA APIs (\texttt{nvmlDeviceSetGpuLockedClocks}) at the whole-GPU granularity. 
+\jiahuan{done}
+
+\subsubsection{\governor and \router Overhead (Reviewers 3 \& 4)}
+
+\textbf{Point Addressed}: concerns about the latency overheads of frequency switching (0.5 ms selection, 3 ms application) and routing ``what-if'' analyses.
+\textbf{Action}: add a clarifying paragraph in \sref{sec:design} to emphasize that \gpvernor runs in an independent process, completely hiding the switching overhead without blocking the critical path. We will also clarify that \router's overhead is $<1$ms/request due to simple logic and XGBoost batching.
+\jiahuan{done}
+
+\subsection{Expanded Discussion}
+
+\jiahuan{@Minjia, @Aryan, do we need to include these in our camera ready draft? }
+
+\subsubsection{Highlighting Key Novelties (Reviewer 3)}
+
+\textbf{Point Addressed}: The reviewer felt the novelty over other mechanisms was not clear enough.
+\textbf{Action}: \jiahuan{@Minjia, @Aryan, do we need to refine the introduction section to make it more clear? I believe our current version is clear enough.}
+\minjia{No major revision needed. This part can be addressed by revising the related work section so how our method differs from prior approaches become more prominent. Can you give a try using highlighted text? After that, I can take a second look. } \aryan{i agree with @Minjia}
+\jiahuan{@Aryan, can you help to write it?}
+\jiahuan{done}
+
+\subsubsection{Generalizability to Newer Architectures and Non-GPUs (Reviewers 1 \& 2)}
+
+\textbf{Point Addressed}: Reviewers asked if \name can extend to newer architectures and non-GPU hardware.
+\textbf{Action}: emphasis in \sref{subsec:main-result} that \name can extend to new hardware like GH200 (results shown in the analysis result section). Also, add a brief discussion on extending the system to non-GPU hardware, noting the requirements for hardware calibration and \governor retraining. \aryan{i like the non-gpu hardware part, it will help many papers working on on-device AI}
+\jiahuan{Done. I added it to the a new section Future Work. It seems this point is not suitable to add to analysis result section and the system design section}
+
+\subsubsection{Advanced Routing Policies as Future Work (Reviewer 2)}
+
+\textbf{Point Addressed}: The reviewer asked if more advanced policies would benefit \router.
+\textbf{Action}: add a brief discussion in the Future Work section noting that while advanced learning-based routing could yield further benefits, they must inherently account for the architectural granularity-induced inefficiencies identified in this paper. \aryan{i think we shouldn't add more than 1 line about this as it might undersell our current routing strategy, which itself, is unique.}
+\jiahuan{Done. I added it to the Future Work section.}

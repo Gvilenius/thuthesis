@@ -1,0 +1,123 @@
+\usepackage[skip=3pt]{caption}
+\usepackage{setspace}
+\usepackage{enumitem}
+% \usepackage{titlesec}
+
+% \captionsetup[subfloat]{abovecaptionskip=1pt}
+% \captionsetup[subfloat]{belowcaptionskip=1pt}
+
+% % \newtoggle{tech-report}
+% % \toggletrue{tech-report}
+% % % \togglefalse{tech-report}
+
+% % \iftoggle{tech-report}{%
+% % }{
+% \renewcommand{\baselinestretch}{1}
+% % }
+
+\setlist{nosep} % Change space between items in a listing.
+\setlength{\textfloatsep}{3pt} % Control space after figure and before text. 
+\setlength{\dbltextfloatsep}{3pt}
+
+\setlength{\intextsep}{1ex} % remove extra space above and below in-line float (reduce space in between figure caption and the text below it)
+
+% \newlength{\sectionbelowskip}
+% \newlength{\sectionaboveskip}
+% \newlength{\subsectionbelowskip}
+% \newlength{\subsectionaboveskip}
+% \newlength{\subsubsectionbelowskip}
+% \newlength{\subsubsectionaboveskip}
+% \newlength{\paragraphaboveskip}
+% \newlength{\paragraphbelowskip}
+
+%  Control space before and after table
+% \newcommand{\spaceabovetable}{\vspace*{-1em}}
+% \newcommand{\spacebelowtable}{\vspace*{-1em}}
+\newcommand{\spaceabovetable}{\vspace*{2em}}
+\newcommand{\spacebelowtable}{\vspace*{2em}}
+
+% \usepackage{titlesec-custom}
+
+% % Avoid starting a new line for subsubsection
+% % \makeatletter
+% % \renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+% %                                      {-3.25ex\@plus -1ex \@minus -.2ex}%
+% %                                      {-1.5ex \@plus -.2ex}% Formerly 1.5ex \@plus .2ex
+% %                                      {\normalfont\normalsize\bfseries}}
+% % \makeatother
+
+% \titleformat{\subsubsection}[runin]% runin puts it in the same paragraph
+%         {\normalfont\normalsize\bfseries}% formatting commands to apply to the whole heading
+%         {\thesubsubsection}% the label and number
+%         {0.5em}% space between label/number and subsection title
+%         {}% formatting commands applied just to subsection title
+%         [.]% punctuation or other commands following subsection title
+% \titleformat{\subsubsection}
+%   {\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+% \titlespacing*{\subsubsection}{0pt}{\subsubsectionaboveskip}{\subsubsectionbelowskip}
+
+% \newcommand{\setvspace}[2]{%
+%   #1 = #2
+%   \advance #1 by -1\parskip}
+
+% Ever so slightly tighter than defaults:
+% \setvspace{\sectionaboveskip}{4pt plus 1pt minus 1pt}
+% \setlength{\sectionbelowskip}{2pt plus 1pt minus 1pt}
+% \setlength{\subsectionbelowskip}{2pt plus 2pt minus 0pt}
+% \setvspace{\subsectionaboveskip}{1pt plus 2pt minus 2pt}
+% % \setlength{\subsubsectionbelowskip}{1pt plus 0pt minus 2pt}
+% % \setvspace{\subsubsectionaboveskip}{1pt plus 0pt minus 2pt}
+% \setvspace{\paragraphaboveskip}{1pt}
+% \setvspace{\paragraphbelowskip}{1pt}
+% \setvspace{\sectionaboveskip}{1pt plus 4pt minus 2pt}
+% \setlength{\sectionbelowskip}{1pt plus 2pt minus 2pt}
+% \setvspace{\subsectionaboveskip}{1pt plus 2pt minus 2pt}
+% \setlength{\subsectionbelowskip}{0pt plus 2pt minus 2pt}
+% \setvspace{\subsubsectionaboveskip}{1pt plus 4pt minus 2pt}
+% \setlength{\subsubsectionbelowskip}{1pt plus 4pt minus 2pt}
+% \setvspace{\paragraphaboveskip}{1pt}
+% \setvspace{\paragraphbelowskip}{1pt}
+
+
+% % \titlespacing*{\section}{0pt}{\sectionaboveskip}{\sectionbelowskip}
+% \titlespacing{\subsection}{0pt}{0pt}{0pt}
+% \titlespacing*{\paragraph}{1pt}{\paragraphaboveskip}{*}
+
+
+\makeatletter % Control space around theorem and lemma
+\def\thm@space@setup{%
+  \thm@preskip=3pt
+  \thm@postskip=\thm@preskip % or whatever, if you don't want them to be equal
+}
+\makeatother
+
+% Control space around itemize items
+\setlist[itemize]{noitemsep, topsep=0pt}
+
+% control space above and below equation.
+% \makeatletter
+% \g@addto@macro\normalsize{%
+%   \setlength\abovedisplayskip{1pt}
+%   \setlength\belowdisplayskip{1pt}
+%   \setlength\abovedisplayshortskip{1pt}
+%   \setlength\belowdisplayshortskip{1pt}
+% }
+% \makeatother
+
+\makeatletter % Control the space around the proof.
+\renewenvironment{proof}[1][\proofname]{\par
+  \vspace{1pt}% remove the space after the theorem
+  \pushQED{\qed}%
+  \normalfont
+  \topsep0pt \partopsep0pt % no space before
+  \trivlist
+  \item[\hskip\labelsep
+        \itshape
+    #1\@addpunct{.}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+  \addvspace{3pt plus 3pt} % some space after
+}
+\makeatother 
+
+% \setlength{\itemindent}{0em}

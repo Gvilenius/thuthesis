@@ -1,0 +1,72 @@
+\section{Problem Formulation} 
+\label{sec:formulation}
+
+
+% \minjia{Problem formulation is unnecessarily convoluted, mixing problem definition with solution space. People get lost before they even look into the solutions.}
+% We formulate end-to-end energy optimization for a P/D disaggregated LLM serving system as a constrained multi-variable optimization problem.
+% The system consists of $N_P$ prefill instances (indexed by $p=1,\cdots,N_P$) and $N_D$ decode instances (indexed by $d=1,\cdots,N_D$).
+% Each instance has an adjustable GPU frequency ($f^P_p$, $f^D_d$) and a system state ($\mathbf{M}^P_p$, $\mathbf{M}^D_d$).
+% A router dispatches $R$ total requests (indexed by $r=1,\cdots,R$) to instances.
+% For $p$-th prefill instance, we define a binary assignment vector $\mathbf{I}^P_p \in \{0,1\}^R$, where $(\mathbf{I}^P_p)_r = 1$ if request $r$ is assigned to it, and 0 otherwise.
+% $\mathbf{I}^D_d$ is defined analogously.
+% Our objective is to minimize total energy consumption while satisfying TTFT ($S_P$) and ITL ($S_D$) SLOs.
+% For tractability, we decompose the overall problem into two subproblems: \emph{frequency control} and \emph{request routing}.
+
+% \jiahuan{check this section and design principle section}
+
+We consider an LLM serving system that follows the P/D disaggregation architecture.
+The system contains $N_P$ prefill instances (indexed by $p=1,\cdots,N_P$) and $N_D$ decode instances (indexed by $d=1,\cdots,N_D$), each running independently. 
+Incoming requests must first complete prefill on one of the prefill instances and subsequently complete decode on one of the decode instances. Let $S_P$ and $S_D$ denote the TTFT and ITL SLO targets for these two phases.
+The objective is to minimize the end-to-end energy consumption across all instances while meeting phase-specific SLOs: prefill $\ttft<S_P$, decode $\itl<S_D$.
+This essentially yields the following constrained optimization problem: minimize total energy of all iterations across all instances, subject to satisfying TTFT and ITL SLO constraints for each request.
+
+
+% Each instance processes requests in iterative steps. 
+% For $p$-th prefill instance, we define a binary assignment vector $\mathbf{I}^P_p \in \{0,1\}^R$, where $(\mathbf{I}^P_p)_r = 1$ if request $r$ is assigned to it, and 0 otherwise.
+% $\mathbf{I}^D_d$ is defined analogously.
+% Our goal is to minimize the end-to-end energy consumption while meeting latency SLOs for both phases: TTFT for prefill ($S_P$) and ITL for decode ($S_D$).
+
+% For \emph{frequency control}, we assume the $p$-th prefill instance and $d$-th decode instance each execute $K^P_p$ and $K^D_d$ total engine iterations, respectively.
+% The optimization becomes:
+% \begin{align}
+%     \min_{f^P_{p,k}} & \sum\nolimits_{k=1}^{K^P_p} E_P \left( f^P_{p,k}, \mathbf{M}^P_{p,k} \right),\ \ p=1,\cdots,N_P, \label{eq:formulation-freq-beg} \\
+%     \min_{f^D_{d,k}} & \sum\nolimits_{k=1}^{K^D_d} E_D \left( f^D_{d,k}, \mathbf{M}^D_{d,k} \right),\ \ d=1,\cdots,N_D, \label{eq:formulation-freq-mid} \\
+%     \text{s.t.}\ & \ttft \left( f^P_{p,k}, M^P_{p,k} \right) \leq S_P, \itl \left( f^D_{d,k}, M^D_{d,k} \right) \leq S_D, \label{eq:formulation-freq-end}
+% \end{align}
+% where $k$ denotes the engine iteration, $E_P(\cdot)$ and $E_D(\cdot)$ are the per-iteration energy consumption.
+% The objective of \eref{eq:formulation-freq-beg}-\ref{eq:formulation-freq-end} is to minimize each instance's energy by selecting the optimal frequency sequences $\{f^P_{p,k}\}$ and $\{f^D_{d,k}\}$.
+
+
+% \emph{Request routing} is formulated as an assignment optimization problem:
+% \begin{align}
+%     \min\nolimits_{\mathbf{I}^P_p, \mathbf{I}^D_d}\ \ & \sum\nolimits_{p=1}^{N_P} E \left( \mathbf{I}^P_p \right) + \sum\nolimits_{d=1}^{N_D} E\left( \mathbf{I}^D_d \right),  \label{eq:formulation-routing-beg} \\
+%     \text{s.t.}\ \ &\sum\nolimits_{p=1}^{N_P} \mathbf{I}^P_p = \sum\nolimits_{d=1}^{N_D} \mathbf{I}^D_d = \mathbf{1}, \label{eq:formulation-routing-end}
+% \end{align}
+% where $E(\cdot)$ is the per-instance energy aggregated over the iteration-level energy terms above in \eref{eq:formulation-freq-beg}-\ref{eq:formulation-freq-mid}.
+% The objective of \eref{eq:formulation-routing-beg}-\ref{eq:formulation-routing-end} is to minimize global energy consumption by selecting the optimal request assignment $\mathbf{I}^P_p$ and $\mathbf{I}^D_d$.
+
+
+% \begin{align}
+%     \min_{I^P, I^D}\ & \sum\nolimits_{p=1}^{N^P} E \left( I^P_{p,1},\cdots,I^P_{p,n} \right) + \sum\nolimits_{d=1}^{N^D} E\left( I^D_{d,1},\cdots,I^D_{d,n} \right),  \label{eq:formulation-routing-beg} \\
+%     \text{s.t.}\ &\sum\nolimits_{p=1}^{N^P} I^P_{n,p} = \sum\nolimits_{d=1}^{N^D} I^D_{n,d} = 1,\ \ n=1,\cdots,N, \label{eq:formulation-routing-end}
+% \end{align}
+% where $E(\cdot)$ is a complicated energy function of an instance which we cannot give analytical form.
+% While these formulations can theoretically yield a global optimum, the problem is NP-hard and even practically intractable.
+% We will simplify them from control theory perspective and design efficient algorithms that approximate the optimum.
+
+% \jiahuan{explain how complicated}
+
+% For \textit{request routing}, assuming that there are $N$ requests in total.
+% Denote $I^P_{p,n} \in \{0,1\}$ as a binary indictor, where $I^P_{p,n}=1$ means that $n$-th request is dispatched to $p$-th prefill instance.
+% $I^D_{d,n}$ is defined similarly.
+% Thus, the routing decision can be written as an assignment optimization problem:
+% \begin{align}
+%     \min_{I^P_n, I^D_n}\ & \sum\nolimits_{p=1}^{N^P} E \left( I^P_{p,1},\cdots,I^P_{p,n} \right) + \sum\nolimits_{d=1}^{N^D} E\left( I^D_{d,1},\cdots,I^D_{d,n} \right),  \label{eq:formulation-routing-beg} \\
+%     \text{s.t.}\ &\sum\nolimits_{p=1}^{N^P} I^P_{n,p} = \sum\nolimits_{d=1}^{N^D} I^D_{n,d} = 1,\ \ n=1,\cdots,N, \label{eq:formulation-routing-end}
+% \end{align}
+% where $E$ is a complicated energy function of an instance which we cannot give analytical form.
+% While these formulations can theoretically yield a global optimum, the problem is NP-hard and even practically intractable.
+% We will simplify them from control theory perspective and design efficient algorithms that approximate the optimum.
+
+
+

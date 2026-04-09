@@ -1,0 +1,16 @@
+\cameraready{
+
+\section{Future Work}
+
+While \name demonstrates strong generalizability to newer GPU architectures such as the GH200, extending the framework to non-GPU hardware accelerators presents a promising avenue for future research.
+Generally, \name can be extended to non-GPU accelerators that support SGLang and expose frequency control APIs.
+However, achieving optimal performance requires adaptation for hardware-specific characteristics.
+First, \governor must be calibrated to capture the hardware-specific U-shaped'' energy-frequency curves.
+Second, the staircase'' patterns are subject to kernel tiling and scheduling, which are dictated by the accelerator's specific hardware implementation.
+Finally, \predictor must be retrained to accurately model the distinct computation and memory access patterns of different accelerators.
+
+Additionally, some P/D disaggregated deployments may employ advanced routing algorithms (e.g., learning-based policies) instead of simple round-robin.
+Integrating \router with these advanced approaches to capture the benefits of both is a promising and challenging research direction.
+Any such combined routing strategy must explicitly or implicitly account for the architectural granularity-induced inefficiencies (the ``staircase'' effect detailed in \sref{subsec:tile-effect}).
+
+}

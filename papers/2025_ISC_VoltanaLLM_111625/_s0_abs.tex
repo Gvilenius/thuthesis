@@ -1,0 +1,56 @@
+\begin{abstract}
+
+% systems increasingly support interactive applications, like real-time chat assistants, code generation tools, and agentic workflows. However, the soaring energy costs of LLM inference presents a growing challenge for sustainable and cost-effective deployment. 
+
+The energy cost of Large Language Model (LLM) inference is rapidly becoming a barrier to sustainable and scalable deployment. Although modern serving architectures expose distinct prefill and decode behaviors, existing systems fail to exploit these phase differences for energy-efficient serving under strict latency SLOs. 
+This paper introduces \name, the first system that explicitly targets and reduces the energy bloat in modern prefill-decode (P/D) disaggregated LLM serving. 
+Guided by a control‑theory perspective, \name separates two levers: per‑instance operating‑point selection (GPU frequency per iteration) and system‑level state‑space routing of requests. We empirically observe that LLM inference exhibits a U‑shaped energy-frequency curve creating ``sweet spots'' that depend on phase behavior and load.
+\name exploits this by combining phase‑specific, iteration‑level frequency selection driven by a lightweight, online‑adaptive latency predictor, with a decode state‑space guided router that avoids architectural granularity-induced inefficiencies, all while meeting desired SLOs.
+We implement \name using SGLang and evaluate it across multiple models and real‑world workloads.
+Our results show \name reduces end‑to‑end energy by up to 36.3\% versus a static max‑frequency baseline while maintaining high SLO attainment, and generalizes to newer GPUs.
+These results point to sustainable LLM serving via phase‑aware, iteration‑level frequency selection coupled with architecture‑aware routing.
+
+% \begin{IEEEkeywords}
+% component, formatting, style, styling, insert.
+% \end{IEEEkeywords}
+
+% \name co-designs frequency scaling and request routing in emerging prefill/decode disaggregated architectures, leveraging their decoupled execution to enable fine-grained phase-specific control. It consists of a feedback-driven frequency controller that dynamically adapts GPU frequency for prefill and decode phases, and a state-space router that explores routing decisions across frequency-scaled instances to minimize energy under latency constraints. We implement \name in SGLang and evaluate its performance over multiple state-of-the-art LLMs and real-world datasets. The results demonstrate that \name achieves up to $36.3$\% energy savings while maintaining near-perfect SLO attainment rates, paving the way for sustainable and intelligent LLM serving.
+% \jiahuan{TODO: revise}
+
+% \aryan{Modern Large Language Model (LLM) serving systems increasingly support interactive applications, like real-time chat assistants, code generation tools, and agentic workflows, yet the growing energy cost of inference challenges sustainable and cost‑effective deployment. We introduce GreenServe, a system for SLO‑aware, energy‑efficient LLM serving on prefill/decode (P/D) disaggregated architectures. Guided by a control‑theory perspective, GreenServe separates two levers: per‑instance operating‑point selection (GPU frequency per iteration) and system‑level state‑space routing of decode requests. We empirically observe that LLM inference exhibits a U‑shaped energy frequency curve creating “sweet spots” that depend on phase behavior and load. GreenServe exploits this by combining phase‑specific, iteration‑level frequency selection (EcoFreq) driven by a lightweight, online‑adaptive latency predictor (EcoPred), with a decode state‑space guided router (EcoRoute) that avoids batch boundary cliffs, all while meeting desired SLOs. We implement GreenServe using SGLang and evaluate it across multiple models and real‑world workloads, GreenServe reduces end‑to‑end energy by up to 36.3\% versus a static max‑frequency baseline while maintaining high SLO attainment, and generalizes to newer GPUs. These results point to sustainable LLM serving via phase‑aware, iteration‑level frequency selection coupled with architecture‑aware routing.}
+
+% Code of \name is open-sourced on GitHub: \url{https://github.com/Supercomputing-System-AI-Lab/VoltanaLLM}.
+
+% \todo{ASPLOS reviewer comments: \begin{itemize}
+%     % \item The whole characterization section studies performance and energy as a function of batch size, which indicates it is offline characterization. Could authors clarify this point? Since the evaluation uses RPS as x-axis, it would be better that characterization also uses online characterization to maintain the consistency. Otherwise, it is hard to justify whether conclusions from offline characterization can generalize to online.
+%     % \jiahuan{discussed and fixed. Offline profiling is enough for observation. For the potential online-offline variation, we introduce the online adapatation}
+    
+%     % \item For Equation (\ref{eq:prefill-f}-\ref{eq:decode-f}) , the paper claims that these relationship function is in theory. Which theory? There is no reference at this point. \jiahuan{fixed, add ``according to~\cite{gonzalez1997supply}'' in the paragraph}
+    
+%     % \item For the bottom figures in Figure \ref{fig:u-shape}, why does frequency take only range from 1005 to 1401 mhz? It would be better to show a complete range of 400-1410 mhz.
+%     % \jiahuan{discussing in the slack channel}
+    
+%     % \item Section 4 is about problem formulation. While the paper claims that the problem is NP-hard and the problem formulations are in theory, it would be better if the authors could provide any insights about energy function $E_P$, $E_D$. Also, what is iteration energy function?
+%     % \jiahuan{fixed. Section written to give the better definition of $E_P$, $E_D$. Also, a small paragraph is added in the background section to explain the ``engine iteration''.}
+    
+%     % \item The system claims to be based on feedback-driven control theory. In principle, feedback control observes the difference between the actual and desired values of a process variable (the error) and uses this feedback to generate a new control action. However, Figure 8 and EcoFreq do not reflect true feedback-driven control, since no actual feedback mechanism is applied to regulate any signal or behavior. Overall, I do not see any true control theory is applied in system design. \jiahuan{fixed. Removed ``feedback-driven''}
+    
+%     % \item For Equations (\ref{eq:pred-ttft}-\ref{eq:pred-itl}), what is the insight of building the analytical latency prediction models? \jiahuan{fixed. Section is reweitten.}
+    
+%     % \item  I wonder if these observations would still hold in the latest version of GPUs. For example, would the U-shaped energy curves still hold on H100 GPUs or B100 GPUs. Adding more measurement results in this direction would significantly enhance the paper's generality.
+%     % \jiahuan{fixed, adding GH200 results to evaluation}
+    
+%     \item The set of SLO is tricky, and this paper does not explain how it sets such SLOs. If setting a loose SLO, one can expect to reduce the GPU frequency and easily get big energy gains without breaking SLO much. If setting a tight SLO, the energy gains under the same SLO attainment would be small. Therefore, to understand how the paper strikes the trade-offs between performance and energy saving, it would be good to show the increased latency and decreased throughput vs. the energy saving, rather than just showing the SLO attainment rate.
+%     \jiahuan{doing: draw latency CDF and put it in the appendix}
+    
+%     % \item On Figure 13, it looks weird that VoltanaLLM may even outperform SGlang (f=1410MHz) in terms of SLO attainment rate. My understanding is that 1410MHz is the maximum Hz VoltanaLLM can tune on A100, so VoltanaLLM should not be able to outperform SGLang (f=1410MHz), while making energy gains. Are there any other designs in VoltanaLLM that lead to better performance beyond the frequency-adjusting techniques?
+%     % \jiahuan{fixed, added ``Notably, the slightly better ITL SLO attainment compared to SGLang-1410 in some situations is attributed to \router.'' in \sref{subsec:main-result}}
+    
+%     % \item Also, one big concern of the paper is that it reveals the authors' identities by posting it on arXiv with the same name for the system. I think this violates the anonymization requirement of ASPLOS'26 ("If your system is already released to the public, rename it in your submission."). \jiahuan{fixed. Paper renamed}
+    
+%     % \item Nits: I suggest that the paper significantly enlarge the font size of each figure, especially the legend text size. They are nearly unreadable when printed out.
+%     % \jiahuan{fixed}
+    
+% \end{itemize}}
+
+\end{abstract}

@@ -1,0 +1,61 @@
+\section{Conclusions}
+\label{sec:conclusion}
+
+% \jiahuan{@Minjia: do we need a limitation subsection?}
+% \minjia{Can you one paragraph so we know what limitations you have in mind, e.g., P/D ratio autoscaling?}
+
+% \minjia{P2: Our main results are reported on 2P2D, which may raise questions on why we choose this setting. Does this subsection provide some insight on how varying P/D ratio, e.g., 1P1D, 2P3D, 2P4D, or even 2P1D, may affect \name's performance? Or we don't have a clear answer. In that case, it probably means it is indeed worthwhile to look into auto-scaling as a future work.}
+
+% \noindent
+In this work, we present \name, the first system for energy-efficient and SLO-aware LLM inference under prefill-decode (P/D) disaggregation.
+\name exploits the fundamentally different compute and memory behaviors of the two phases to introduce phase-specific, iteration-level frequency control and architecture-aware, state-space navigation-based routing.
+Together, these techniques enable \cameraready{per-engine-iteration} control of latency-energy that existing serving systems cannot achieve.
+Through comprehensive evaluation on state-of-the-art LLMs and real-world datasets, \name achieves up to 36.3\% energy savings while preserving latency SLO attainment.
+These results highlight the potential of fine-grained, phase-aware co-design in advancing sustainable LLM serving systems.
+
+% \aryan{We present \name, the first system to provide energy‑efficient and SLO‑aware LLM serving system for P/D‑disaggregated architectures. Framed through a control‑theory perspective, GreenServe uses per‑iteration operating‑point selection (\governor + EcoPred) and state‑space routing (EcoRoute) to exploit the distinct prefill/decode behaviors and the observed U‑shaped energy-frequency relationship, carefully avoiding decode batch‑boundary regions that trigger energy cliffs. Across models, datasets, and hardware, GreenServe reduces end‑to‑end energy by up to 36.3\% relative to a static max‑frequency baseline while preserving TTFT/ITL SLO attainment, and generalizes to GH200 with phase‑appropriate frequency options. Our work contributed towards advancing sustainable LLM serving through phase‑aware, iteration‑level control and architecture‑aware routing.}
+
+% \jiahuan{TODO: revise it}
+
+% \minjia{Spacing: Work on revising the paper to get the paper to 11 page. You can start by revising paragraphs that have dangling words (1-3) at the end to save one extra line.}
+
+% % \minjia{Minor: Missing citation in Intro "within the TDP limitation [? ]"} \jiahuan{addressed}
+
+% % \minjia{Minor: Please check all captions. They should all end with ".". At least Figure 21 does not "Figure 21. Frequency behaviors of VoltanaLLM". Please double check.} \jiahuan{addresed}
+
+% % \minjia{Format: Please check the ASPLOS submission guideline to see if table caption should be on top of table or below. Somehow I thought the caption for table should be on top of the table.} \jiahuan{addressed}
+
+% % \minjia{Format: Check all bib format to have consistent format (kinda messy right now).} \aryan{Done.}
+
+% % \minjia{Format: Please double check ASPLOS submission guide to see if the appendix should be in a separate pdf or can be submitted together with the main text.} \jiahuan{addressed}
+
+% \minjia{Format: In general, a figure needs to appear after the text that reference it. I'm specifically referring to Figure 14, 15, 16, which are currently right after "6.3 Analysis Results" but are referenced by text after them. Please adjust the figure/text location so that figures are in general placed after text references. On top of that, please spread figures out so that no single page has too many congested figures.}
+
+% % \minjia{There are places wrong figure macros are used, e.g., in the paragraph of "Do more frequency levels bring the benefits?", it has "Figure Fig. 18", but you really just need \fref{} to refer to the figure. Similarly, to refer to a section, all you need is \sref{}. Please double check and fix all issues like this in the paper.} \jiahuan{addressed}
+
+% \minjia{Spacing: If space is still an issue, you can move the throughput results to the appendix.}
+
+% % \aryan{\fref{fig:kernel-tile} x-axis should be batch size} \jiahuan{addrerssed}
+
+% \aryan{prefer to have more figures on page 1 or 2, it is text heavy -- usually helps for readability}
+
+% % \minjia{Format: The following is wrong. "Several work have started to explore energy-efficient and power management frameworks for LLM inference. ~\cite{stojkovic2025dynamollm}." The citation needs to be before ".", like "Several work have started to explore energy-efficient and power management frameworks for LLM inference~\cite{stojkovic2025dynamollm}." Please double check across the paper and fix it.} \jiahuan{addressed}
+
+% % \minjia{Table 2's caption seems to be a bit too generic. "Performance and energy under a synthetic workload with varying prefill/decode demand ratios". What does TSAR and ISAR mean?}  \jiahuan{addressed}
+
+% % \minjia{Table 1 still has TODO left.} \label{addressed}
+
+% % \minjia{If space is still an issue in the end, you can use vspace mildly to reduce some large empty space between sections (starting from the conclusions).}
+
+% % \textbf{Limitations.} \jiahuan{TODO: auto scale P/D}
+% % \minjia{If it is autoscale, we don't need to put it in the conclusion. Unlike some ML conferences, system conferences do not require one to add an explicit limitation section.} \jiahuan{addressed}
+
+% % \minjia{Figure 8 misses caption 12:52pm.} \jiahuan{addressed}
+
+% \minjia{Spacing: For the final version, try to get the paper to exactly 11-page, e.g., 1-2 empty lines at the end are okay, but please avoid having large empty space at the end. You can easily control global spacing, such as empty space before and after tables/figures in spacing.tex.}
+
+
+
+
+% \minjia{Make sure to update title/abstract in the submission system.}
+
