@@ -268,24 +268,24 @@ ZeRO-3.5在反向传播期间重用逐步释放的激活值内存来保存收集
     \label{fig:catflow-perf}
 \end{figure*}
 
-\begin{figure}[!t]
+\begin{figure*}[!t]
     \centering
-    \begin{subfigure}[b]{0.48\columnwidth}
+    \begin{subfigure}[b]{0.48\linewidth}
         \centering
         \includegraphics[width=\linewidth]{figures/catflow-memory-a100.png}
-        \caption{峰值显存（相对ZeRO-2）}
+        \caption{峰值显存对比（基线：ZeRO-2）}
         \label{fig:catflow-mem-a100}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.48\columnwidth}
+    \begin{subfigure}[b]{0.48\linewidth}
         \centering
         \includegraphics[width=\linewidth]{figures/catflow-zero4-memory.pdf}
-        \caption{ZeRO-4显存节省}
+        \caption{ZeRO-4显存节省分析}
         \label{fig:catflow-mem-zero4}
     \end{subfigure}
     \caption{ZeRO-2、ZeRO-3、ZeRO-3.5和ZeRO-4的性能（基线：ZeRO-3）和内存占用（基线：ZeRO-2）对比。ZeRO-3.5/4在保持与ZeRO-3相当峰值内存的同时实现了显著的吞吐量提升。}
     \label{fig:catflow-mem}
-\end{figure}
+\end{figure*}
 
 如图\ref{fig:catflow-perf}所示，ZeRO-3.5和ZeRO-4在所有测试配置下均优于ZeRO-3，且在通信带宽较低的硬件（如H800-PCIe和A100-PCIe）上提升幅度更大——这与理论分析一致：这两种策略的核心都是减少通信量，在通信受限环境中效果更突出。
 
@@ -293,33 +293,34 @@ ZeRO-3.5在反向传播期间重用逐步释放的激活值内存来保存收集
 
 \subsubsection{配置探索}
 
-\begin{figure}[!t]
+\begin{figure*}[!t]
     \centering
-    \begin{subfigure}[b]{0.48\columnwidth}
+    \begin{subfigure}[b]{0.24\linewidth}
         \centering
         \includegraphics[width=\linewidth]{figures/catflow-zero35-throughput.png}
         \caption{ZeRO-3.5吞吐量}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.48\columnwidth}
+    \begin{subfigure}[b]{0.24\linewidth}
         \centering
         \includegraphics[width=\linewidth]{figures/catflow-zero35-memory.png}
         \caption{ZeRO-3.5峰值内存}
     \end{subfigure}
-    \begin{subfigure}[b]{0.48\columnwidth}
+    \hfill
+    \begin{subfigure}[b]{0.24\linewidth}
         \centering
         \includegraphics[width=\linewidth]{figures/catflow-zero4-throughput.png}
         \caption{ZeRO-4吞吐量}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.48\columnwidth}
+    \begin{subfigure}[b]{0.24\linewidth}
         \centering
         \includegraphics[width=\linewidth]{figures/catflow-zero4-memory.png}
         \caption{ZeRO-4峰值内存}
     \end{subfigure}
-    \caption{ZeRO-3.5（上）和ZeRO-4（下）的配置探索热图。横轴为batch size/序列长度，纵轴为策略特定超参数（ZeRO-3.5为保留参数比例，ZeRO-4为延迟梯度比例）。}
+    \caption{ZeRO-3.5（左两图）和ZeRO-4（右两图）的配置探索热图。横轴为batch size/序列长度，纵轴为策略特定超参数（ZeRO-3.5为保留参数比例，ZeRO-4为延迟梯度比例）。}
     \label{fig:catflow-config}
-\end{figure}
+\end{figure*}
 
 进一步分析超参数如何影响ZeRO-3.5和ZeRO-4的性能和内存使用，如图\ref{fig:catflow-config}所示。
 

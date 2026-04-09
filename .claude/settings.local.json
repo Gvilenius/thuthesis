@@ -7,7 +7,18 @@
       "Bash(do)",
       "Bash(if [ -f \"/mdata/linjunfeng/thuthesis/data/figures/$f\" ])",
       "Bash(then echo \"✓ $f\")",
-      "Bash(else echo \"✗ MISSING: $f\")"
+      "Bash(else echo \"✗ MISSING: $f\")",
+      "Read(//mdata/linjunfeng/thuthesis/**)",
+      "Bash(while read img)",
+      "Bash(if [ ! -f \"/mdata/linjunfeng/thuthesis/data/figures/$img\" ])",
+      "Bash(then)",
+      "Bash(echo \"MISSING: $img\")",
+      "WebFetch(domain:arxiv.org)",
+      "WebFetch(domain:dblp.org)",
+      "WebFetch(domain:scholar.google.com)",
+      "WebFetch(domain:proceedings.mlsys.org)",
+      "WebFetch(domain:www.usenix.org)",
+      "WebFetch(domain:dl.acm.org)"
     ]
   }
 }

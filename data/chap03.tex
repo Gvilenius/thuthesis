@@ -207,6 +207,10 @@ EcoFreq的有效性依赖于准确的推理延迟预测器$T_P(\cdot)$和$T_D(\c
     T_D \left(\mathbf{M}, \mathbf{B}, f \right) &= \text{XGBoost}(f, N_{\text{req}}, N_{\text{kv}})
 \end{align}
 
+选择 XGBoost 而非深度神经网络的原因在于：（1）训练数据量有限（离线 profiling 样本数千条），XGBoost 对小样本更鲁棒；（2）推理延迟极低（$<$0.5 ms），满足实时控制需求；（3）可解释性强，便于调试和验证。
+
+prefill 和 decode 的模型配置在关键超参数上有所不同，以适配各自的预测任务特性。prefill 模型采用线性增益器（\texttt{booster='gblinear'}）配合大量迭代（$10^5$次），因为prefill延迟与token数量呈近似线性关系，线性模型更合适；decode 模型采用树型增益器（\texttt{booster='gbtree'}）配合较少迭代（$10^3$次），因为decode呈现阶梯效应，需要非线性模型捕捉不连续性。两个模型均采用平均绝对误差（MAE）作为优化目标，并使用早停机制防止过拟合。
+
 \subsubsection{在线自适应}
 
 离线profiling采用均匀分布采样以最小化偏差，但实际部署中由于动态请求到达和序列长度变化，存在分布偏移。为克服这一问题，EcoPred在运行时持续收集在线性能指标，每收集$X$个新样本就启动后台微调过程，生成更新的模型$T_P^{\text{online}}(\cdot)$和$T_D^{\text{online}}(\cdot)$。这种在线微调使EcoPred能够在动态工作负载变化下保持精度。
@@ -557,6 +561,21 @@ GH200展现出与A100相似但不同的U型能耗-频率曲线：prefill的能�
 GreenServe默认采用两个频率级别（能效甜点和最大频率）。为分析更多频率级别是否能带来额外收益，图\ref{fig:multi-level}将双频级别与五频级别（$\mathcal{F}=\{1005, 1095, 1200, 1305, 1410\}$ MHz）进行对比。
 
 对于prefill阶段，由于负载在相邻迭代间剧烈波动，中间频率级别被大量使用的机会极少，增加频率级别的收益可以忽略不计。对于decode阶段，更细粒度的频率确实能带来轻微额外节能，但代价是SLO达成率的小幅下降——这是因为中间频率的精准选择难度更高，在边界附近更容易出现频率选择保守或激进的情况。因此，对于大多数部署场景，双频级别的设计在简单性和效率之间取得了最佳平衡；对于有意愿牺牲少量SLO来换取更大节能的场景，可以考虑引入更多级别并配合精心调整的Delta参数。
+
+\subsection{EcoRoute路由阈值$\Delta$的敏感性分析}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/gs-delta.pdf}
+    \caption{EcoRoute路由阈值$\Delta \in \{110, 210, 310, 410\}$ MHz对ITL SLO达成率和能耗的影响（五频级别配置）。不同$\Delta$值下性能稳定，验证了EcoRoute对参数选择的鲁棒性。}
+    \label{fig:delta-sensitivity}
+\end{figure}
+
+EcoRoute中的阈值$\Delta$用于控制不同decode实例间频率差异的上限，防止负载过度倾斜。图\ref{fig:delta-sensitivity}评估了在五频级别配置（$\mathcal{F}=\{1005, 1095, 1200, 1305, 1410\}$ MHz）下，$\Delta \in \{110, 210, 310, 410\}$ MHz对ITL SLO达成率和能效的影响。
+
+结果表明，EcoRoute对$\Delta$的选择具有较强的鲁棒性：在测试的所有$\Delta$值下，系统均实现了相近的能耗节省和SLO达成率。在双频级别（默认配置，$\Delta=500$ MHz）下，$\Delta$对路由行为基本无影响，因为两个频率级别之间的差距正好等于$\Delta$设置，两种情况均能触发保护逻辑。$\Delta$在多频级别场景下更为关键：较小的$\Delta$（如110 MHz）在高RPS时能更好地防止实例间极端负载不均，而较大的$\Delta$在低RPS时允许更激进的频率保护策略。综合来看，$\Delta=500$ MHz（双频级别默认值）或$\Delta=210$ MHz（多频级别推荐值）能在能效和负载均衡之间取得良好平衡。
+
+\section{本章小结}
 
 本章针对大模型推理服务的能效优化问题，提出了GreenServe系统。通过系统性的实证分析，首次揭示了LLM推理的非单调U型能耗-频率曲线和架构粒度导致的能效阶梯现象。基于这些发现，设计了EcoPred延迟预测器、EcoFreq迭代级频率控制器和EcoRoute状态空间路由器三项核心技术，实现了毫秒级响应的精细化能效控制。在多个模型和真实负载下的实验表明，GreenServe在保障SLO的前提下实现了最高36.3\%的能耗降低，且能泛化到新一代GPU硬件。
 

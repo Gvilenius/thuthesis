@@ -28,6 +28,8 @@
 
 \textbf{碳排放与生命周期优化。}EcoServe\cite{li2025ecoserve}从生命周期角度研究推理系统的碳排放问题，提出基于离线/在线推断、负载需求和模型规模的GPU/CPU分配策略。TAPAS\cite{stojkovic2025tapas}关注数据中心的热管理，通过将请求路由到特定机架行/列来利用热和功率的松弛空间，避免高功率热点。Heron\cite{reddy2025ai}提出将GPU部署在靠近可再生能源的位置，并通过负载调整提高能源效率。
 
+\textbf{训练阶段能效优化。}Perseus\cite{zhou2023perseus}研究了分布式训练中的能效问题，发现梯度同步造成的"能效散漫者"（energy straggler）现象：等待梯度聚合的空闲时段使GPU在满功耗状态下空转，浪费大量能耗。Perseus通过识别关键路径外的冗余计算并降低相应算子的功率来节能，在不牺牲训练效果的前提下实现了显著的能效提升。然而，Perseus主要针对数据并行的全局同步点，未深入探索流水线并行中各阶段计算强度差异带来的频率优化机会。
+
 上述工作存在以下局限性：首先，它们大多采用粗粒度的频率控制，无法适应推理负载在毫秒级时间尺度上的变化；其次，它们未区分prefill和decode两个阶段的异质性，采用统一的控制策略；第三，它们未深入分析大模型推理能耗-延迟关系的非线性特征和硬件架构粒度效应。本文的GreenServe系统正是针对这些局限而设计，首次实现了迭代级响应式频率控制和阶段感知的能效优化。
 
 \subsection{Prefill-Decode分离架构}
@@ -86,7 +88,7 @@ SplitWise\cite{patel2024splitwise}首次系统分析了分离架构的优势，�
 
 \textbf{分层搜索策略。}Alpa\cite{zheng2022alpa}采用两阶段搜索：第一阶段确定流水线划分，第二阶段优化每个stage内的张量并行。Piper\cite{tarnawski2021piper}提出类似的分层方法，但更关注流水线调度优化。这些方法将搜索问题分解，降低了复杂度，但也限制了搜索空间。
 
-\textbf{约束优化方法。}Unity\cite{unger2022unity}将并行策略搜索建模为约束优化问题，使用整数线性规划求解。FlexFlow\cite{jia2019flexflow}定义了SOAP搜索空间（Sample-Operator-Attribute-Parameter），使用MCMC采样搜索。Tofu\cite{zhuang2023optimizing}专注于跨mesh的数据重分片优化。
+\textbf{约束优化方法。}Unity\cite{unger2022unity}将并行策略搜索建模为约束优化问题，使用整数线性规划求解。FlexFlow\cite{jia2019flexflow}定义了SOAP搜索空间（Sample-Operator-Attribute-Parameter），使用MCMC采样搜索。Tofu\cite{zhuang2023optimizing}专注于跨mesh的数据重分片优化。Galvatron\cite{miao2023galvatron}提出了混合并行性（Hybrid Parallelism）的自动搜索框架，将数据并行、张量并行、流水线并行和分片并行的组合纳入统一的动态规划搜索空间，通过精确的性能代价模型在数分钟内找到给定硬件配置下的最优并行策略。相比固定3D并行，Galvatron在超大规模模型上可实现显著的吞吐量提升。
 
 上述方法的共同局限在于搜索空间由预定义范式限定，难以发现超越现有范式的新型策略。例如，它们无法发现ZeRO-3.5或WeiPipe这类需要精细控制数据流轨迹的策略。
 
