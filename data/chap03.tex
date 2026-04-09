@@ -44,7 +44,7 @@
 
 \begin{figure}[!t]
     \centering
-    \includegraphics[width=0.9\columnwidth]{figures/prefill-load-bs-time.pdf}
+    \includegraphics[width=\columnwidth]{figures/prefill-load-bs-time.pdf}
     \caption{Prefill阶段活跃请求数和token数的迭代级波动。由于动态批处理和请求完成，负载在连续迭代间快速变化。}
     \label{fig:prefill-tokens-fluctuation}
 \end{figure}
@@ -363,7 +363,7 @@ EcoFreq-only相比SGLang-1410为prefill和decode实例都实现了显著的能�
 
 \begin{figure}[!t]
     \centering
-    \includegraphics[width=0.95\columnwidth]{figures/ablation-freq-time-combined.pdf}
+    \includegraphics[width=\columnwidth]{figures/ablation-freq-time-combined.pdf}
     \caption{EcoFreq-only在不同请求率下的实时频率跟踪。低RPS时实例主要运行于低频；高RPS时更多时间处于高频以满足SLO。}
     \label{fig:freq-time}
 \end{figure}
@@ -374,7 +374,7 @@ EcoFreq-only相比SGLang-1410为prefill和decode实例都实现了显著的能�
 
 \begin{figure}[!t]
     \centering
-    \includegraphics[width=0.95\columnwidth]{figures/ablation-slo.pdf}
+    \includegraphics[width=\columnwidth]{figures/ablation-slo.pdf}
     \caption{GreenServe与基线在不同SLO配置下的对比（low: 400/40ms, medium: 600/60ms, high: 800/80ms）。GreenServe在所有设置下都保持高SLO达成率并实现显著能耗节省。}
     \label{fig:slo-sensitivity}
 \end{figure}
@@ -387,7 +387,7 @@ EcoFreq-only相比SGLang-1410为prefill和decode实例都实现了显著的能�
 
 \begin{figure}[!t]
     \centering
-    \includegraphics[width=0.95\columnwidth]{figures/ablation-interval.pdf}
+    \includegraphics[width=\columnwidth]{figures/ablation-interval.pdf}
     \caption{不同频率控制间隔下的SLO达成率。迭代级控制提供最佳响应性和最高的SLO达成率。}
     \label{fig:time-window}
 \end{figure}
@@ -400,7 +400,7 @@ EcoFreq-only相比SGLang-1410为prefill和decode实例都实现了显著的能�
 
 \begin{figure}[!t]
     \centering
-    \includegraphics[width=0.85\columnwidth]{figures/prediction_error.pdf}
+    \includegraphics[width=\columnwidth]{figures/prediction_error.pdf}
     \caption{EcoPred的TTFT和ITL预测平均绝对误差（MAE），比较离线模型和在线自适应模型。}
     \label{fig:pred-accuracy}
 \end{figure}

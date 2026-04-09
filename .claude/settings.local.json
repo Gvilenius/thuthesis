@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -f out/main.fdb_latexmk out/main.fls out/main.aux)",
+      "Bash(latexmk -xelatex -synctex=1 -interaction=nonstopmode -file-line-error main.tex --outdir=out)"
+    ]
+  }
+}
