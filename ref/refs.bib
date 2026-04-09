@@ -1,335 +1,498 @@
-@article{zhangkun1994,
-  author     = {张昆 and 冯立群 and 余昌钰 and others},
-  title      = {机器人柔性手腕的球面齿轮设计研究},
-  journal    = {清华大学学报: 自然科学版},
-  volume     = {34},
-  number     = {2},
-  pages      = {1--7},
-  year       = {1994},
-  key        = {zhang1 kun1},
+% =====================================================================
+% refs.bib - 论文参考文献
+% 覆盖 chap01.tex ~ chap06.tex 中所有 \cite{} 引用
+% =====================================================================
+
+% ---- 基础模型 / Scaling Laws ----
+
+@article{vaswani2017attention,
+  title     = {Attention is all you need},
+  author    = {Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N and Kaiser, {\L}ukasz and Polosukhin, Illia},
+  journal   = {Advances in Neural Information Processing Systems},
+  volume    = {30},
+  year      = {2017}
 }
 
-@book{zhukezhen1973,
-  author     = {竺可桢},
-  title      = {物理学论},
-  address    = {北京},
-  publisher  = {科学出版社},
-  year       = {1973},
-  pages      = {56--60},
-  key        = {zhu2 ke3 zhen1},
+@article{brown2020language,
+  title   = {Language models are few-shot learners},
+  author  = {Brown, Tom and Mann, Benjamin and Ryder, Nick and Subbiah, Melanie and Kaplan, Jared D and Dhariwal, Prafulla and Neelakantan, Arvind and Shyam, Pranav and Sastry, Girish and Askell, Amanda and others},
+  journal = {Advances in Neural Information Processing Systems},
+  volume  = {33},
+  pages   = {1877--1901},
+  year    = {2020}
 }
 
-@inproceedings{dupont1974bone,
-  author     = {Dupont, B},
-  title      = {Bone marrow transplantation in severe combined immunodeficiency with an unrelated MLC compatible donor},
-  editor     = {White, H J and Smith, R},
-  booktitle  = {Proceedings of the third annual meeting of the International Society for Experimental Hematology},
-  address    = {Houston},
-  publisher  = {International Society for Experimental Hematology},
-  year       = {1974},
-  pages      = {44--46},
+@misc{openai2023gpt4,
+  title         = {{GPT-4} Technical Report},
+  author        = {Josh Achiam and Steven Adler and Sandhini Agarwal and Lama Ahmad and Ilge Akkaya and others},
+  year          = {2023},
+  eprint        = {2303.08774},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL}
 }
 
-@mastersthesis{zhengkaiqing1987,
-  author     = {郑开青},
-  title      = {通讯系统模拟及软件},
-  address    = {北京},
-  school     = {清华大学无线电系},
-  year       = {1987},
-  key        = {zheng4 kai1 qing1},
+@misc{kaplan2020scalinglaws,
+  title         = {Scaling Laws for Neural Language Models},
+  author        = {Jared Kaplan and Sam McCandlish and Tom Henighan and Tom B. Brown and Benjamin Chess and Rewon Child and Scott Gray and Alec Radford and Jeffrey Wu and Dario Amodei},
+  year          = {2020},
+  eprint        = {2001.08361},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG}
 }
 
-@patent{jiangxizhou1980,
-  author     = {姜锡洲},
-  title      = {一种温热外敷药制备方案},
-  address    = {中国},
-  number     = {88105607.3},
-  year       = {1980},
-  date       = {1980-07-26},
-  key        = {jiang1 xi1 zhou1},
+@misc{dubey2024llama3,
+  title         = {The Llama 3 Herd of Models},
+  author        = {Abhimanyu Dubey and Abhinav Jauhri and Abhinav Pandey and Abhishek Kadian and Ahmad Al-Dahle and others},
+  year          = {2024},
+  eprint        = {2407.21783},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI}
 }
 
-@standard{jianduju1994,
-  author     = {中华人民共和国国家技术监督局},
-  title      = {GB3100-3102. 中华人民共和国国家标准-量与单位},
-  address    = {北京},
-  publisher  = {中国标准出版社},
-  year       = {1994},
-  key        = {zhong1 hua2 ren2 min2 gong4 he2 guo2},
+@article{patterson2021carbon,
+  title   = {Carbon emissions and large neural network training},
+  author  = {Patterson, David and Gonzalez, Joseph and Le, Quoc and Liang, Chen and Munguia, Lluis-Miquel and Rothchild, Daniel and So, David and Texier, Maud and Dean, Jeff},
+  journal = {arXiv preprint arXiv:2104.10350},
+  year    = {2021}
 }
 
-@article{merkt1995rotational,
-  author     = {Merkt, Fr{\'e}d{\'e}ric and Mackenzie, S R and Softley, Timothy P},
-  title      = {Rotational Autoionization Dynamics in High Rydberg States of Nitrogen},
-  journal    = {J Chem Phys},
-  year       = {1995},
-  volume     = {103},
-  pages      = {4509--4518},
+% ---- 推理系统 ----
+
+@inproceedings{yu2022orca,
+  title     = {Orca: A distributed serving system for {Transformer-Based} generative models},
+  author    = {Yu, Gyeong-In and Jeong, Joo Seong and Kim, Geon-Woo and Kim, Soojeong and Chun, Byung-Gon},
+  booktitle = {16th USENIX Symposium on Operating Systems Design and Implementation (OSDI 22)},
+  pages     = {521--538},
+  year      = {2022}
 }
 
-@article{mellinger1996laser,
-  author     = {Mellinger, A and Vidal, C R and Jungen, {Ch}},
-  title      = {Laser reduced fluorescence study of the carbon monoxide nd triplet Rydberg series - Experimental results and multichannel quantum defect analysis},
-  journal    = {J Chem Phys},
-  year       = {1996},
-  volume     = {104},
-  pages      = {8913--8921},
+@article{zheng2024sglang,
+  title   = {{SGLang}: Efficient execution of structured language model programs},
+  author  = {Zheng, Lianmin and Yin, Liangsheng and Xie, Zhiqiang and Sun, Chuyue Livia and Huang, Jeff and Yu, Cody Hao and Cao, Shiyi and Kozyrakis, Christos and Stoica, Ion and Gonzalez, Joseph E and others},
+  journal = {Advances in Neural Information Processing Systems},
+  volume  = {37},
+  pages   = {62557--62583},
+  year    = {2024}
 }
 
-@article{bixon1996dynamics,
-  author     = {Bixon, M and Jortner, Joshua},
-  title      = {The dynamics of predissociating high {Rydberg} states of {NO}},
-  journal    = {J Chem Phys},
-  year       = {1996},
-  volume     = {105},
-  pages      = {1363--1382},
+@inproceedings{kwon2023efficient,
+  title     = {Efficient memory management for large language model serving with {PagedAttention}},
+  author    = {Kwon, Woosuk and Li, Zhuohan and Zhuang, Siyuan and Sheng, Ying and Zheng, Lianmin and Yu, Cody Hao and Gonzalez, Joseph and Zhang, Hao and Stoica, Ion},
+  booktitle = {Proceedings of the 29th Symposium on Operating Systems Principles},
+  pages     = {611--626},
+  year      = {2023}
 }
 
-@article{mahui1995,
-  author     = {马辉 and 李俭 and 刘耀明 and others},
-  title      = {利用 {REMPI} 方法测量 {BaF} 高里德堡系列光谱},
-  journal    = {化学物理学报},
-  year       = {1995},
-  volume     = {8},
-  pages      = {308--311},
-  key        = {ma3 hui1},
+@inproceedings{sheng2023flexgen,
+  title        = {{FlexGen}: High-throughput generative inference of large language models with a single {GPU}},
+  author       = {Sheng, Ying and Zheng, Lianmin and Yuan, Binhang and Li, Zhuohan and Ryabinin, Max and Chen, Beidi and Liang, Percy and R{\'e}, Christopher and Stoica, Ion and Zhang, Ce},
+  booktitle    = {International Conference on Machine Learning},
+  pages        = {31094--31116},
+  year         = {2023},
+  organization = {PMLR}
 }
 
-@article{carlson1981two,
-  author     = {Carlson, N W and Taylor, A J and Jones, K M and Schawlow, A L},
-  title      = {Two-step polarization-labeling spectroscopy of excited states of {Na2}},
-  journal    = {Phys Rev A},
-  year       = {1981},
-  volume     = {24},
-  pages      = {822--834},
+@inproceedings{prabhu2025vattention,
+  title     = {vAttention: Dynamic memory management for serving {LLMs} without {PagedAttention}},
+  author    = {Prabhu, Ramya and Nayak, Ajay and Mohan, Jayashree and Ramjee, Ramachandran and Panwar, Ashish},
+  booktitle = {Proceedings of the 30th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 1},
+  pages     = {1133--1150},
+  year      = {2025}
 }
 
-@article{taylor1983scanning,
-  author     = {Taylor, A J and Jones, K M and Schawlow, A L},
-  title      = {Scanning pulsed-polarization spectrometer applied to {Na2}},
-  journal    = {J Opt Soc Am},
-  year       = {1983},
-  volume     = {73},
-  pages      = {994--998},
+@inproceedings{miao2024specinfer,
+  title     = {{SpecInfer}: Accelerating large language model serving with tree-based speculative inference and verification},
+  author    = {Miao, Xupeng and Oliaro, Gabriele and Zhang, Zhihao and Cheng, Xinhao and Wang, Zeyu and Zhang, Zhengxin and Wong, Rae Ying Yee and Zhu, Alan and Yang, Lijie and Shi, Xiaoxiang and others},
+  booktitle = {Proceedings of the 29th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 3},
+  pages     = {932--949},
+  year      = {2024}
 }
 
-@article{taylor1981study,
-  author     = {Taylor, A J and Jones, K M and Schawlow, A L},
-  title      = {A study of the excited {1$\Sigma$g+} states in {Na2}},
-  journal    = {Opt Commun},
-  year       = {1981},
-  volume     = {39},
-  pages      = {47--50},
+@article{stern2018blockwise,
+  title   = {Blockwise parallel decoding for deep autoregressive models},
+  author  = {Stern, Mitchell and Shazeer, Noam and Uszkoreit, Jakob},
+  journal = {Advances in Neural Information Processing Systems},
+  volume  = {31},
+  year    = {2018}
 }
 
-@article{shimizu1983laser,
-  author     = {Shimizu, Kazuko and Shimizu, Fujio},
-  title      = {Laser induced fluorescence spectra of the a {3$\Pi$u--X 1$\Sigma$g+} band of {Na2} by molecular beam},
-  journal    = {J Chem Phys},
-  year       = {1983},
-  volume     = {78},
-  pages      = {1126--1131},
+@article{wu2023fast,
+  title   = {Fast distributed inference serving for large language models},
+  author  = {Wu, Bingyang and Zhong, Yinmin and Zhang, Zili and Liu, Shengyu and Liu, Fangyue and Sun, Yuanhang and Huang, Gang and Liu, Xuanzhe and Jin, Xin},
+  journal = {arXiv preprint arXiv:2305.05920},
+  year    = {2023}
 }
 
-@article{atkinson1982experimental,
-  author     = {Atkinson, J B and Becker, J and Demtr{\"o}der, W},
-  title      = {Experimental observation of the a {3$\Pi$u} state of {Na2}},
-  journal    = {Chem Phys Lett},
-  year       = {1982},
-  volume     = {87},
-  pages      = {92--97},
+@inproceedings{li2023alpaserve,
+  title     = {{AlpaServe}: Statistical multiplexing with model parallelism for deep learning serving},
+  author    = {Li, Zhuohan and Zheng, Lianmin and Zhong, Yinmin and Liu, Vincent and Sheng, Ying and Jin, Xin and Huang, Yanping and Chen, Zhifeng and Zhang, Hao and Gonzalez, Joseph E. and Stoica, Ion},
+  booktitle = {17th USENIX Symposium on Operating Systems Design and Implementation (OSDI 23)},
+  pages     = {663--679},
+  year      = {2023}
 }
 
-@article{kusch1975perturbations,
-  author     = {Kusch, P and Hessel, M M},
-  title      = {Perturbations in the A {1$\Sigma$u+} state of {Na2}},
-  journal    = {J Chem Phys},
-  year       = {1975},
-  volume     = {63},
-  pages      = {4087--4088},
+@inproceedings{wang2021lightseq,
+  title     = {{LightSeq}: A high performance inference library for {Transformers}},
+  author    = {Wang, Xiaohui and Xiong, Ying and Wei, Yang and Wang, Mingxuan and Li, Lei},
+  booktitle = {Proceedings of the 2021 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies: Industry Papers},
+  pages     = {113--120},
+  year      = {2021}
 }
 
-@book{guangxi1993,
-  author     = {广西壮族自治区林业厅},
-  title      = {广西自然保护区},
-  address    = {北京},
-  publisher  = {中国林业出版社},
-  year       = {1993},
-  key        = {guang3 xi1 zhuang4 zu2 zi4 zhi4 qu1},
+% ---- 能效优化 ----
+
+@inproceedings{stojkovic2025dynamollm,
+  title     = {{DynamoLLM}: Designing {LLM} inference clusters for performance and energy efficiency},
+  author    = {Stojkovic, Jovan and Zhang, Chaojie and Goiri, {\'I}{\~n}igo and Torrellas, Josep and Choukse, Esha},
+  booktitle = {2025 IEEE International Symposium on High Performance Computer Architecture (HPCA)},
+  year      = {2025}
 }
 
-@book{huosini1989guwu,
-  author     = {霍斯尼},
-  title      = {谷物科学与工艺学原理},
-  translator = {李庆龙},
-  edition    = {2},
-  address    = {北京},
-  publisher  = {中国食品出版社},
-  year       = {1989},
-  pages      = {15--20},
-  key        = {huo4 si1 ni2},
+@inproceedings{kakolyris2025throttll,
+  title     = {{throttLL'eM}: Predictive {GPU} throttling for energy efficient {LLM} inference serving},
+  author    = {Kakolyris, Andreas Kosmas and Masouros, Dimosthenis and Vavaroutsos, Petros and Xydis, Sotirios and Soudris, Dimitrios},
+  booktitle = {2025 IEEE International Symposium on High Performance Computer Architecture (HPCA)},
+  year      = {2025}
 }
 
-@book{wangfuzhi1865songlun,
-  author     = {王夫之},
-  title      = {宋论},
-  edition    = {刻本},
-  address    = {金陵},
-  publisher  = {曾氏},
-  year       = {1865（清同治四年）},
-  key        = {wang2 fu1 zhi1},
+@inproceedings{qiu2024power,
+  title     = {Power-aware deep learning model serving with {$\mu$-Serve}},
+  author    = {Qiu, Haoran and Mao, Weichao and Patke, Archit and Cui, Shengkun and Jha, Saurabh and Wang, Chen and Franke, Hubertus and Kalbarczyk, Zbigniew and Ba{\c{s}}ar, Tamer and Iyer, Ravishankar K},
+  booktitle = {2024 USENIX Annual Technical Conference (USENIX ATC 24)},
+  pages     = {75--93},
+  year      = {2024}
 }
 
-@book{zhaoyaodong1998xinshidai,
-  author     = {赵耀东},
-  title      = {新时代的工业工程师},
-  address    = {台北},
-  publisher  = {天下文化出版社},
-  year       = {1998},
-  urldate    = {1998-09-26},
-  url        = {http://www.ie.nthu.edu.tw/info/ie.newie.htm},
-  key        = {zhao4 yao4 dong1},
+@article{li2025ecoserve,
+  title   = {{EcoServe}: Designing carbon-aware {AI} inference systems},
+  author  = {Li, Yueying and Hu, Zhanqiu and Choukse, Esha and Fonseca, Rodrigo and Suh, G Edward and Gupta, Udit},
+  journal = {arXiv preprint arXiv:2502.05043},
+  year    = {2025}
 }
 
-@standard{biaozhunhua2002tushu,
-  author     = {全国信息与文献工作标准化技术委员会出版物格式分委员会},
-  title      = {GB/T 12450-2001 图书书名页},
-  address    = {北京},
-  publisher  = {中国标准出版社},
-  year       = {2002},
-  pages      = {1},
-  key        = {quan2 guo2 xin4 xi1},
+@inproceedings{stojkovic2025tapas,
+  title     = {{TAPAS}: Thermal- and power-aware scheduling for {LLM} inference in cloud platforms},
+  author    = {Stojkovic, Jovan and Zhang, Chaojie and Goiri, {\'I}{\~n}igo and Choukse, Esha and Qiu, Haoran and Fonseca, Rodrigo and Torrellas, Josep and Bianchini, Ricardo},
+  booktitle = {Proceedings of the 30th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 2},
+  year      = {2025}
 }
 
-@book{chubanzhuanye2004,
-  author     = {全国出版专业职业资格考试办公室},
-  title      = {全国出版专业职业资格考试辅导教材: 出版专业理论与实务•中级},
-  edition    = {2014},
-  address    = {上海},
-  publisher  = {上海辞书出版社},
-  year       = {2004},
-  pages      = {299--307},
-  key        = {quan2 guo2 chu1 ban3 ye4},
+@article{reddy2025ai,
+  title   = {{AI} Greenferencing: Routing {AI} inferencing to green modular data centers with {Heron}},
+  author  = {Tella Rajashekhar Reddy and Palak and Rohan Gandhi and Anjaly Parayil and Chaojie Zhang and Mike Shepperd and Liangcheng Yu and Jayashree Mohan and Srinivasan Iyengar and Shivkumar Kalyanaraman and Debopam Bhattacherjee},
+  journal = {arXiv preprint arXiv:2505.09989},
+  year    = {2025}
 }
 
-@techreport{who1970factors,
-  author     = {{World Health Organization}},
-  title      = {Factors Regulating the Immune Response: Report of {WHO Scientific Group}},
-  address    = {Geneva},
-  publisher  = {WHO},
-  year       = {1970},
+@article{desislavov2023trends,
+  title     = {Trends in {AI} inference energy consumption: Beyond the performance-vs-parameter laws of deep learning},
+  author    = {Desislavov, Radosvet and Mart{\'\i}nez-Plumed, Fernando and Hern{\'a}ndez-Orallo, Jos{\'e}},
+  journal   = {Sustainable Computing: Informatics and Systems},
+  volume    = {38},
+  pages     = {100857},
+  year      = {2023},
+  publisher = {Elsevier}
 }
 
-@book{peebles2001probability,
-  author     = {Peebles, Jr, Peyton Z.},
-  title      = {Probability, Random Variables, and Random Signal Principles},
-  edition    = {4},
-  address    = {New York},
-  publisher  = {McGraw Hill},
-  year       = {2001},
+@inproceedings{patel2024characterizing,
+  title     = {Characterizing power management opportunities for {LLMs} in the cloud},
+  author    = {Patel, Pratyush and Choukse, Esha and Zhang, Chaojie and Goiri, {\'I}{\~n}igo and Warrier, Brijesh and Mahalingam, Nithish and Bianchini, Ricardo},
+  booktitle = {Proceedings of the 29th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 3},
+  pages     = {207--222},
+  year      = {2024}
 }
 
-@incollection{baishunong1998zhiwu,
-  author     = {白书农},
-  title      = {植物开花研究},
-  editor     = {李承森},
-  booktitle  = {植物科学进展},
-  address    = {北京},
-  publisher  = {高等教育出版社},
-  year       = {1998},
-  pages      = {146--163},
-  key        = {bai2 shu1 nong2},
+% ---- Prefill-Decode 分离架构 ----
+
+@inproceedings{patel2024splitwise,
+  title        = {{Splitwise}: Efficient generative {LLM} inference using phase splitting},
+  author       = {Patel, Pratyush and Choukse, Esha and Zhang, Chaojie and Shah, Aashaka and Goiri, {\'I}{\~n}igo and Maleki, Saeed and Bianchini, Ricardo},
+  booktitle    = {2024 ACM/IEEE 51st Annual International Symposium on Computer Architecture (ISCA)},
+  pages        = {118--132},
+  year         = {2024},
+  organization = {IEEE}
 }
 
-@incollection{weinstein1974pathogenic,
-  author     = {Weinstein, L and Swertz, M N},
-  title      = {Pathogenic Properties of Invading Microorganism},
-  editor     = {Sodeman, Jr, William A and Sodeman, William A},
-  booktitle  = {Pathologic physiology: mechanisms of disease},
-  address    = {Philadelphia},
-  publisher  = {Saunders},
-  year       = {1974},
-  pages      = {745--772},
+@inproceedings{zhong2024distserve,
+  title     = {{DistServe}: Disaggregating prefill and decoding for goodput-optimized large language model serving},
+  author    = {Zhong, Yinmin and Liu, Shengyu and Chen, Junda and Hu, Jianbo and Zhu, Yibo and Liu, Xuanzhe and Jin, Xin and Zhang, Hao},
+  booktitle = {18th USENIX Symposium on Operating Systems Design and Implementation (OSDI 24)},
+  pages     = {193--210},
+  year      = {2024}
 }
 
-@inproceedings{hanjiren1985lun,
-  author     = {韩吉人},
-  title      = {论职工教育的特点},
-  editor     = {中国职工教育研究会},
-  booktitle  = {职工教育研究论文集},
-  address    = {北京},
-  publisher  = {人民教育出版社},
-  year       = {1985},
-  pages      = {90--99},
-  key        = {han2 ji2 ren2},
+@article{hu2024inference,
+  title   = {Inference without interference: Disaggregate {LLM} inference for mixed downstream workloads},
+  author  = {Cunchen Hu and Heyang Huang and Liangliang Xu and Xusheng Chen and Jiang Xu and Shuang Chen and Hao Feng and Chenxi Wang and Sa Wang and Yungang Bao and Ninghui Sun and Yizhou Shan},
+  journal = {arXiv preprint arXiv:2401.11181},
+  year    = {2024}
 }
 
-@periodical{dizhi1936dizhi,
-  author     = {中国地质学会},
-  title      = {地质评论},
-  year       = {1936},
-  volume     = {1},
-  number     = {1},
-  address    = {北京},
-  publisher  = {地质出版社},
-  key        = {zhong1 guo2 di4 zhi3 xue2 hui4},
+@inproceedings{sun2024llumnix,
+  title     = {Llumnix: Dynamic scheduling for large language model serving},
+  author    = {Sun, Biao and Huang, Ziming and Zhao, Hanyu and Xiao, Wencong and Zhang, Xinyi and Li, Yong and Lin, Wei},
+  booktitle = {18th USENIX Symposium on Operating Systems Design and Implementation (OSDI 24)},
+  pages     = {173--191},
+  year      = {2024}
 }
 
-@periodical{tushuguan1957tushuguanxue,
-  author     = {中国图书馆学会},
-  title      = {图书馆学通讯},
-  year       = {1957/1990},
-  number     = {1--4},
-  address    = {北京},
-  publisher  = {北京图书馆},
-  key        = {zhong1 guo2 tu2 shu1 guan3 xue2 hui4},
+% ---- 分布式训练：数据并行 ----
+
+@misc{rajbhandari2020zero,
+  title         = {{ZeRO}: Memory optimizations toward training trillion parameter models},
+  author        = {Samyam Rajbhandari and Jeff Rasley and Olatunji Ruwase and Yuxiong He},
+  year          = {2020},
+  eprint        = {1910.02054},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG}
 }
 
-@periodical{aaas1883science,
-  author     = {{American Association for the Advancement of Science}},
-  title      = {Science},
-  year       = {1883},
-  volume     = {1},
-  number     = {1},
-  address    = {Washington, D.C.},
-  publisher  = {American Association for the Advancement of Science},
+@misc{zhao2023pytorch,
+  title         = {{PyTorch FSDP}: Experiences on scaling fully sharded data parallel},
+  author        = {Yanli Zhao and Andrew Gu and Rohan Varma and Liang Luo and Chien-Chin Huang and Min Xu and Less Wright and Hamid Shojanazeri and Myle Ott and Sam Shleifer and others},
+  year          = {2023},
+  eprint        = {2304.11277},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.DC}
 }
 
-@newspaper{fugang2000fengsha,
-  author     = {傅刚 and 赵承 and 李佳路},
-  title      = {大风沙过后的思考},
-  journal    = {北京青年报},
-  year       = {2000},
-  date       = {2000-04-12},
-  number     = {14},
-  urldate    = {2002-03-06},
-  url        = {http://www.bjyouth.com.cn/Bqb/20000412/B/4216%5ED0412B1401.htm},
-  key        = {fu4 gang1},
+@inproceedings{ren2021zero,
+  title     = {{ZeRO-Offload}: Democratizing billion-scale model training},
+  author    = {Ren, Jie and Rajbhandari, Samyam and Aminabadi, Reza Yazdani and Ruwase, Olatunji and Yang, Shuangyan and Zhang, Minjia and Li, Dong and He, Yuxiong},
+  booktitle = {2021 USENIX Annual Technical Conference (USENIX ATC 21)},
+  pages     = {551--564},
+  year      = {2021}
 }
 
-@online{xiaoyu2001chubanye,
-  author     = {萧钰},
-  title      = {出版业信息化迈入快车道},
-  year       = {2001},
-  date       = {2001-12-19},
-  urldate    = {2002-04-15},
-  url        = {http://www.creader.com/news/20011219/200112190019.htm},
-  key        = {xiao1 yu4},
+% ---- 分布式训练：模型并行 ----
+
+@article{shoeybi2019megatron,
+  title   = {{Megatron-LM}: Training multi-billion parameter language models using model parallelism},
+  author  = {Shoeybi, Mohammad and Patwary, Mostofa and Puri, Raul and LeGresley, Patrick and Casper, Jared and Catanzaro, Bryan},
+  journal = {arXiv preprint arXiv:1909.08053},
+  year    = {2019}
 }
 
-@online{oclc2000about,
-  author     = {{Online Computer Library Center, Inc}},
-  title      = {About {OCLC}: History of Cooperation},
-  year       = {2000},
-  urldate    = {2000-01-08},
-  url        = {http://www.oclc.org/about/cooperation.en.htm},
+@inproceedings{narayanan2021efficient,
+  title     = {Efficient large-scale language model training on {GPU} clusters using {Megatron-LM}},
+  author    = {Narayanan, Deepak and Shoeybi, Mohammad and Casper, Jared and LeGresley, Patrick and Patwary, Mostofa and Korthikanti, Vijay and Vainbrand, Dmitri and Kashinkunti, Prethvi and Bernauer, Julie and Catanzaro, Bryan and others},
+  booktitle = {Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis},
+  pages     = {1--15},
+  year      = {2021}
 }
 
-@software{scitor2000project,
-  author     = {{Scitor Corporation}},
-  title      = {Project scheduler},
-  address    = {Sunnyvale, Calif.},
-  publisher  = {Scitor Corporation},
-  year       = {1983},
-  medium     = {DK},
+% ---- 流水线并行 ----
+
+@misc{gpipe,
+  title         = {{GPipe}: Efficient training of giant neural networks using pipeline parallelism},
+  author        = {Huang, Yanping and Cheng, Youlong and Bapna, Ankur and Firat, Orhan and Chen, Mia Xu and Chen, Dehao and Lee, HyoukJoong and Ngiam, Jiquan and Le, Quoc V. and Wu, Yonghui and Chen, Zhifeng},
+  year          = {2018},
+  eprint        = {1811.06965},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV}
+}
+
+@article{huang2019gpipe,
+  title   = {{GPipe}: Efficient training of giant neural networks using pipeline parallelism},
+  author  = {Huang, Yanping and Cheng, Youlong and Bapna, Ankur and Firat, Orhan and Chen, Dehao and Chen, Mia and Lee, HyoukJoong and Ngiam, Jiquan and Le, Quoc V and Wu, Yonghui and others},
+  journal = {Advances in Neural Information Processing Systems},
+  volume  = {32},
+  year    = {2019}
+}
+
+@inproceedings{harlap2018pipedream,
+  title     = {{PipeDream}: Fast and efficient pipeline parallel {DNN} training},
+  author    = {Harlap, Aaron and Narayanan, Deepak and Phanishayee, Amar and Seshadri, Vivek and Devanur, Nikhil and Ganger, Greg and Gibbons, Phil},
+  booktitle = {Proceedings of the 16th Workshop on Hot Topics in Operating Systems},
+  pages     = {1--5},
+  year      = {2019}
+}
+
+@inproceedings{li2021chimera,
+  title     = {Chimera: Efficiently training large-scale neural networks with bidirectional pipelines},
+  author    = {Li, Shigang and Hoefler, Torsten},
+  booktitle = {Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis},
+  pages     = {1--14},
+  year      = {2021}
+}
+
+@misc{qi2024zerobubble,
+  title         = {Zero bubble pipeline parallelism},
+  author        = {Penghui Qi and Xinyi Wan and Guangxing Huang and Min Lin},
+  year          = {2024},
+  eprint        = {2401.10241},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.DC}
+}
+
+@inproceedings{kim2023bpipe,
+  title        = {{BPipe}: Memory-balanced pipeline parallelism for training large language models},
+  author       = {Kim, Taebum and Kim, Hyoungjoo and Yu, Gyeong-In and Chun, Byung-Gon},
+  booktitle    = {International Conference on Machine Learning},
+  pages        = {16639--16653},
+  year         = {2023},
+  organization = {PMLR}
+}
+
+% ---- 序列并行 / 长上下文训练 ----
+
+@misc{li2022sequence,
+  title         = {Sequence Parallelism: Long sequence training from system perspective},
+  author        = {Shenggui Li and Fuzhao Xue and Chaitanya Baranwal and Yongbin Li and Yang You},
+  year          = {2022},
+  eprint        = {2105.13120},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG}
+}
+
+@misc{liu2023ring,
+  title         = {Ring attention with blockwise transformers for near-infinite context},
+  author        = {Hao Liu and Matei Zaharia and Pieter Abbeel},
+  year          = {2023},
+  eprint        = {2310.01889},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL}
+}
+
+@misc{gu2024loongtrain,
+  title         = {{LoongTrain}: Efficient training of long-sequence {LLMs} with head-context parallelism},
+  author        = {Diandian Gu and Peng Sun and Qinghao Hu and Ting Huang and Xun Chen and Yingtong Xiong and Guoteng Wang and Qiaoling Chen and Shangchun Zhao and Jiarui Fang and Yonggang Wen and Tianwei Zhang and Xin Jin and Xuanzhe Liu},
+  year          = {2024},
+  eprint        = {2406.18485},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.DC}
+}
+
+@misc{chen2023longlora,
+  title         = {{LongLoRA}: Efficient fine-tuning of long-context large language models},
+  author        = {Yukang Chen and Shengju Qian and Haotian Tang and Xin Lai and Zhijian Liu and Song Han and Jiaya Jia},
+  year          = {2023},
+  eprint        = {2309.12307},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL}
+}
+
+% ---- 注意力优化 ----
+
+@misc{dao2023flashattention,
+  title         = {{FlashAttention}: Fast and memory-efficient exact attention with {IO}-awareness},
+  author        = {Tri Dao and Daniel Y. Fu and Stefano Ermon and Atri Rudra and Christopher R{\'e}},
+  year          = {2022},
+  eprint        = {2205.14135},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG}
+}
+
+@article{dao2023flashattention2,
+  title   = {{FlashAttention-2}: Faster attention with better parallelism and work partitioning},
+  author  = {Dao, Tri},
+  journal = {arXiv preprint arXiv:2307.08691},
+  year    = {2023}
+}
+
+% ---- 内存优化 ----
+
+@article{chen2016training,
+  title   = {Training deep nets with sublinear memory cost},
+  author  = {Chen, Tianqi and Xu, Bing and Zhang, Chiyuan and Guestrin, Carlos},
+  journal = {arXiv preprint arXiv:1604.06174},
+  year    = {2016}
+}
+
+@misc{micikevicius2018mixed,
+  title         = {Mixed precision training},
+  author        = {Paulius Micikevicius and Sharan Narang and Jonah Alben and Gregory Diamos and Erich Elsen and David Garcia and Boris Ginsburg and Michael Houston and Oleksii Kuchaiev and Ganesh Venkatesh and Hao Wu},
+  year          = {2018},
+  eprint        = {1710.03740},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI}
+}
+
+% ---- 自动并行化 ----
+
+@inproceedings{zheng2022alpa,
+  title     = {Alpa: Automating inter- and intra-operator parallelism for distributed deep learning},
+  author    = {Zheng, Lianmin and Li, Zhuohan and Zhang, Hao and Zhuang, Yonghao and Chen, Zhifeng and Huang, Yanping and Wang, Yida and Xu, Yuanzhong and Zhuo, Danyang and Xing, Eric P. and Gonzalez, Joseph E. and Stoica, Ion},
+  booktitle = {16th USENIX Symposium on Operating Systems Design and Implementation (OSDI 22)},
+  pages     = {559--578},
+  year      = {2022}
+}
+
+@inproceedings{jia2019flexflow,
+  title     = {Beyond data and model parallelism for deep neural networks},
+  author    = {Jia, Zhihao and Zaharia, Matei and Aiken, Alex},
+  booktitle = {Proceedings of Machine Learning and Systems},
+  volume    = {1},
+  pages     = {1--13},
+  year      = {2019}
+}
+
+@inproceedings{unger2022unity,
+  title     = {Unity: Accelerating {DNN} training through joint optimization of algebraic transformations and parallelization},
+  author    = {Unger, Colin and Zheng, Zhihao and Kim, Woojeong and Liu, Wen-Ling and Lim, Lekang and Yang, Zhirong and Bhatt, Nirmal and Jia, Zhihao and Aiken, Alex},
+  booktitle = {16th USENIX Symposium on Operating Systems Design and Implementation (OSDI 22)},
+  pages     = {267--284},
+  year      = {2022}
+}
+
+@inproceedings{lin2024nnscaler,
+  title     = {{nnScaler}: Constraint-guided parallelization plan generation for deep learning training},
+  author    = {Zhiqi Lin and Youshan Miao and Quanlu Zhang and Fan Yang and Yi Zhu and Cheng Li and Saeed Maleki and Xu Cao and Ning Shang and Yilei Yang and Weijiang Xu and Mao Yang and Lintao Zhang and Lidong Zhou},
+  booktitle = {18th USENIX Symposium on Operating Systems Design and Implementation (OSDI 24)},
+  pages     = {347--363},
+  year      = {2024}
+}
+
+@inproceedings{lin2024tessel,
+  title        = {{Tessel}: Boosting distributed execution of large {DNN} models via flexible schedule search},
+  author       = {Lin, Zhiqi and Miao, Youshan and Xu, Guanbin and Li, Cheng and Saarikivi, Olli and Maleki, Saeed and Yang, Fan},
+  booktitle    = {2024 IEEE International Symposium on High-Performance Computer Architecture (HPCA)},
+  pages        = {803--816},
+  year         = {2024},
+  organization = {IEEE}
+}
+
+@article{tarnawski2021piper,
+  title   = {{Piper}: Multidimensional planner for {DNN} parallelization},
+  author  = {Tarnawski, Jakub M and Narayanan, Deepak and Phanishayee, Amar},
+  journal = {Advances in Neural Information Processing Systems},
+  volume  = {34},
+  pages   = {24829--24840},
+  year    = {2021}
+}
+
+@misc{xu2021gspmd,
+  title         = {{GSPMD}: General and scalable parallelization for {ML} computation graphs},
+  author        = {Yuanzhong Xu and HyoukJoong Lee and Dehao Chen and Blake Hechtman and Yanping Huang and Rahul Joshi and Maxim Krikun and Dmitry Lepikhin and Andy Ly and Marcello Maggioni and Ruoming Pang and Noam Shazeer and Shibo Wang and Tao Wang and Yonghui Wu and Zhifeng Chen},
+  year          = {2021},
+  eprint        = {2105.04663},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.DC}
+}
+
+@inproceedings{liu2024aceso,
+  title     = {{Aceso}: Efficient parallel {DNN} training through iterative bottleneck alleviation},
+  author    = {Liu, Guodong and Miao, Youshan and Lin, Zhiqi and Shi, Xiaoxiang and Maleki, Saeed and Yang, Fan and Bao, Yungang and Wang, Sa},
+  booktitle = {Proceedings of the Nineteenth European Conference on Computer Systems},
+  pages     = {163--181},
+  year      = {2024}
+}
+
+@misc{zhuang2023optimizing,
+  title         = {Optimizing distributed {ML} communication with redundancy in schedule search},
+  author        = {Zhuang, Yonghao and Li, Zhuohan and Zheng, Lianmin and Pan, Eric and Gonzalez, Joseph E. and Stoica, Ion and Chen, Zhifeng},
+  year          = {2023},
+  eprint        = {2305.18490},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.DC}
+}
+
+% ---- 异构计算 / 集群 ----
+
+@inproceedings{athlur2022varuna,
+  title     = {{Varuna}: Scalable, low-cost training of massive deep learning models},
+  author    = {Athlur, Sanjith and Saran, Nitika and Sivathanu, Muthian and Ramjee, Ramachandran and Kwatra, Nipun},
+  booktitle = {Proceedings of the Seventeenth European Conference on Computer Systems},
+  pages     = {472--487},
+  year      = {2022}
 }
