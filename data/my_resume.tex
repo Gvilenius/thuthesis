@@ -1,0 +1,190 @@
+% !TEX TS-program = xelatex
+% !TEX encoding = UTF-8 Unicode
+% !Mode:: "TeX:UTF-8"
+
+\documentclass{resume}
+
+\usepackage{enumitem} % 用于自定义列表样式
+\usepackage{hyperref} % 用于创建可点击的链接
+\hypersetup{colorlinks=true, urlcolor=blue} % 设置链接颜色
+
+% 定义一个新的 project 环境
+% #1: 项目标题, #2: 项目时间
+% --- 緊湊版 Project 環境定義 ---
+\newenvironment{compactproject}[2]{
+    \vspace{3pt} % 減小專案間的垂直間距
+    \noindent\textbf{\textit{#1}} % 專案標題 (移除 \large)
+    \hfill
+    \textbf{#2} % 專案日期
+    \par\vspace{2pt} % 減小標題與描述間的距離
+    % itemsep=0pt 移除了項目間的額外間距
+    \begin{itemize}[leftmargin=1.2em, topsep=1pt, partopsep=0pt, itemsep=0pt, parsep=1pt]
+}{
+    \end{itemize}
+}
+
+\usepackage{zh_CN-Adobefonts_external} % Simplified Chinese Support using external fonts (./fonts/zh_CN-Adobe/)
+%\usepackage{zh_CN-Adobefonts_internal} % Simplified Chinese Support using system fonts
+\usepackage{linespacing_fix} % disable extra space before next section
+\usepackage{cite}
+
+\begin{document}
+\pagenumbering{gobble} % suppress displaying page number
+
+\name{林俊峰}
+
+% {E-mail}{mobilephone}{homepage}
+% be careful of _ in emaill address
+\contactInfo{(+86) 18368042405}{linjf21@mails.tsinghua.edu.cn}{AI Infrastructure}{}
+% {E-mail}{mobilephone}
+% keep the last empty braces!
+%\contactInfo{xxx@yuanbin.me}{(+86) 131-221-87xxx}{}
+ 
+% \section{个人总结}
+% 本人在校成绩优秀、乐观向上，工作负责、自我驱动力强、热爱尝试新事物，认同开放、连接、共享的Web在未来的不可替代性。在校期间长期从事可视分析(Web的2D/3D时空可视化)相关研究，对Web技术发展趋势及前端工程化解决方案有浓厚兴趣。\textbf{现任职于 BAT 集团。}
+
+% \section{\faGraduationCap\ 教育背景}
+\section{教育背景}
+\datedsubsection{\textbf{清华大学}, 类脑计算中心, \textit{博士在读}}{2021.9 - 2026.6（预计）}
+\ 清华大学综合优秀奖学金
+% \ \textbf{排名11/133(前10\%)},中国科学院大学学业奖学金(2次),IEEE Student member,预计2018年6月毕业
+\datedsubsection{\textbf{伊利诺伊大学-厄巴纳香槟分校},计算机科学,\textit{访问学者}}{2025.2 - 2025.8}\ 清华大学访问学者奖学金
+
+\datedsubsection{\textbf{清华大学},计算机科学与技术,\textit{工学学士}}{2017.9 - 2021.6}
+\ \textbf{GPA 3.66/4.0},国家励志奖学金,学业优秀奖学金,计算机系优秀毕业生
+
+
+% \section{\faCogs\ IT 技能}
+% \section{技术能力}
+% % increase linespacing [parsep=0.5ex]
+% \begin{itemize}[parsep=0.2ex]
+%   \item \textbf{编程语言}: C++, Python
+%   \item \textbf{操作系统,数据库与工程构建}: Linux/macOS/MySQL/MongoDB/Git/webpack/Progressive Web App
+%   \item \textbf{关键词}: React/Vue.js/D3.js(SVG)/three.js(canvas, WebGL)/chrome extension/Express
+% \end{itemize}
+
+% \end{itemize}
+
+\section{学术论文}
+
+\datedsubsection{\textbf{期刊}}{}
+\begin{enumerate}
+    % \item {HASP: Hierarchical asynchronous parallelism for multi-NN tasks. 
+    % Hongyi Li, ..., \textbf{\underline{Junfeng Lin}}, et al. 2023. IEEE Transactions on Computers}. \\(\textbf{TC, CCF-A})
+
+    \item {SongC: A Compiler for Hybrid Near-Memory and In-Memory Many-Core Architecture. 
+    \textbf{\underline{Junfeng Lin*}}, Huanyu Qu*, Songchen Ma*, et al. 2023. IEEE Transactions on Computers}. \\ (\textbf{TC, CCF-A, 第一作者})
+
+    \item {A versatile and power-saving brain-inspired computing chip. Yangshu Shen*, Zhenzhi Wu*, Weihao Zhang*, \textbf{\underline{Junfeng Lin*}}, et.al.. 2026.}\\
+    (\textbf{Nature}，学生一作，在投)
+
+\end{enumerate}
+
+\datedsubsection{\textbf{会议}}{}
+\begin{enumerate}
+    \item {CATFlow: Data-Monistic Parallelism Plan Discovery for Distributed Training}. Qu Huanyu*, Zhang Weihao*, \textbf{Junfeng Lin*}, et al.. \\(\textbf{OSDI'26, CCF-A}, 在审)
+    \item {VoltanaLLM: Feedback-Driven Frequency Control and State-Space Routing for Energy-Efficient LLM Serving.
+    Jiahuan Yu, \textbf{ \underline{Junfeng Lin*}}, et al.}. \\(\textbf{ISCA'26, CCF-A}, 在审)
+    
+    % \item {MLDSE: Scaling Design Space Exploration Infrastructure for Multi-Level Hardware.
+    % Huanyu Qu, Weihao Zhang, \textbf{Junfeng Lin}, et al.}. \\(\textbf{HPCA'26, CCF-A}, 在审)
+
+    % \item {Scalable PIM-based LLM System via Hybrid Complementary PIMs and  In-Transit Computation.
+    % Hongyi Li,..., \textbf{Junfeng Lin}, et al.}. \\(\textbf{HPCA'26, CCF-A}, 在审)
+    \item {WeiPipe: Weight Pipeline Parallelism for Communication-Effective Long-Context Large Model Training.
+    \textbf{\underline{Junfeng Lin*}}, Ziming Liu*, et al.}. \\( \textbf{PPoPP'25, CCF-A, 第一作者})
+\end{enumerate}
+    
+
+
+
+% \begin{onehalfspacing}
+% \end{onehalfspacing}
+
+% \datedsubsection{\textbf{DID-ACTE} 荷兰莱顿}{2015年}
+% \role{本科毕业设计}{LIACS 交换生}
+% 利用结巴分词对中国古文进行分词与词性标注，用已有领域知识训练形成 classifier 并对结果进行调优
+% \begin{onehalfspacing}
+% \begin{itemize}
+%   \item 利用结巴分词对中国古文进行分词与词性标注
+%   \item 利用已有领域知识训练形成 classifier, 并用分词结果进行测试反馈
+%   \item 尝试不同规则，对 classifier 进行调优
+% \end{itemize}
+% \end{onehalfspacing}
+
+\section{专利}
+% \subsection{\textbf{已授权}}
+\begin{enumerate}
+        \item 权重流水并行的神经网络分布式训练方法和装置。申请日：2024-07-19。专利号：ZL 2023 1 0160001.1。
+    \item 任务处理的方法和装置、众核系统、计算机可读介质。申请日：2023年02月21日。专利号：ZL 2023 1 0160001.1 。
+    \item 神经网络任务的代码生成方法和装置。申请日：2022年06月21日。专利号：ZL 2022 1 0705825.8。
+\end{enumerate}
+% \subsection{\textbf{实质审查}}
+% \begin{enumerate}
+
+%     \item 任务编译的方法、编译器、计算机可读介质。申请日：2023年02月21日。公开号：CN119067196A。    \item 时序神经网络的映射方法及装置、加速器。申请日：2022年11月10日。公开号：	
+%     CN115660054A。
+%     \item 任务映射的方法、电子设备、计算机可读介质。申请日：2023年2月24日。公开号：	
+%     CN116382894A。
+%     \item 任务处理方法及装置。申请日：2023年1月16日。公开号：	
+%     CN116257249A。
+% \end{enumerate}
+
+\section{项目经历}
+\begin{compactproject}{面向ZeRO的存储通信优化}{2025.9 -- 2025.12}
+\item 基于ZeRO3实现进一步ZeRO3.5和ZeRO4策略，在通信受限的场景下相比ZeRO3提升39.1\%的吞吐，相对ZeRO2降低36.6\%的显存
+\item 实现Preload-Then-Discard的ZeRO-offload策略，存储受限的场景下提高模型吞吐高达89.4\%
+
+\end{compactproject}
+\begin{compactproject}{VotanaLLM: 大模型节能推理系统}{2025.3 -- 2025.6}
+\item 设计开发VotanaLLM节能推理框架，通过对Prefill/Decode阶段进行异构频率调度与动态路由，在保证服务质量(SLO)的前提下，将LLM推理能耗最高降低\textbf{36\%}。
+\item 相关研究成果已投稿至体系结构顶级会议 \textbf{ISCA'26}。
+\end{compactproject}
+
+\begin{compactproject}{权重流水并行框架 (长文本训练优化)}{2023.9 -- 2024.9}
+\item 针对低带宽集群的训练瓶颈，提出权重流水(Weight Pipelining)并行方案，通过有效隐藏通信开销显著优化长文本训练性能。
+\item 核心成果被并行计算顶级会议 \textbf{PPoPP'25} (CCF-A) 录用。
+\end{compactproject}
+
+% \begin{compactproject}{BiMap: 众核类脑芯片编译工具链}{2021.9 -- 2023.9}
+% \item 作为核心开发者，为“天机”芯片设计了BiMap编译及仿真工具链。通过构建多级IR(中间表示)架构与编译-仿真协同优化流程，高效解决了混合神经网络的自动化部署难题。
+% \item 成果发表于体系结构顶刊 \textbf{IEEE TC} (CCF-A)，项目已在GitHub开源。
+% \end{compactproject}
+
+% \begin{compactproject}{强化学习算法研究与应用}{2018.9 -- 2019.12}
+% \item 负责强化学习算法研究与实践，基于A2C/SAC实现自动驾驶模型(入选清华“学术推进计划”)。
+% \item \textbf{核心成就}：设计的多智能体协作策略，获得NeurIPS 2018 Pommerman全球竞赛\textbf{第七名}。
+% \end{compactproject}
+
+
+\section{实习经历}
+\begin{compactproject}
+{凯读投资，AI Infra 研究实习生 }{2025.10 -- 2025.12}
+\item 探索流水线并行支撑自研分布式训练框架。
+\item 研究低精度训练和高效注意力机制在量化模型上的应用。
+\end{compactproject}
+
+\begin{compactproject}
+{灵汐科技，编译器研发实习生 }{2021.7 -- 2024.9}
+\item 作为核心成员，深度参与自研“天机”类脑芯片的全栈工具链研发，包括编译器、仿真器及大模型分布式训练框架的设计与实现。
+% \item 将“BiMap编译工具链”及“权重流水并行框架”等核心研究项目成功在“天机”芯片上落地实现，支撑了多篇顶会/顶刊论文的发表。
+\end{compactproject}
+
+\begin{compactproject}
+{腾讯，软件开发实习生}{2020.7 -- 2020.9}
+\item 负责腾讯内部Git平台的WebIDE(在线集成开发环境)的前期技术预研与核心功能开发。
+% \item  利用Docker容器化技术，为腾讯Git设计并搭建了一套隔离、安全的在线代码编译与执行环境。
+% \item 因表现出色，最终获评“优秀实习项目”。
+\end{compactproject}
+
+\section{荣誉奖项}
+\textbf{清华大学研究生综合奖学金} \hfill 2025年9月 \\
+\textbf{PPoPP 2026 Travel Grant} \hfill 2025年3月 \\
+\textbf{清华大学访问学者奖学金} \hfill 2024年11月 \\
+\textbf{清华大学研究生综合奖学金} \hfill 2023年9月 \\
+\textbf{清华大学计算机系优秀毕业生} \hfill 2021年7月 \\
+\textbf{清华大学国家励志奖学金} \hfill 2019年11月 \\
+\textbf{清华大学学业优秀奖} \hfill 2019年11月 \\
+\textbf{全国部分地区大学生物理竞赛(非物理组)二等奖} \hfill 2018年12月 \\
+
+\end{document}
