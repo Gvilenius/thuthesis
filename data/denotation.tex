@@ -3,7 +3,7 @@
 \begin{denotation}[3.5cm]
   \item[LLM] 大语言模型（Large Language Model）
   \item[GPU] 图形处理单元（Graphics Processing Unit）
-  \item[CPU] 中央处理单元（Central Processing Unit）
+  \item[TPU] 张量处理单元（Tensor Processing Unit）
   \item[SLO] 服务等级目标（Service Level Objective）
   \item[TTFT] 首Token时延（Time to First Token）
   \item[ITL] Token间时延（Inter-Token Latency）
@@ -17,16 +17,60 @@
   \item[PCIe] 高速串行计算机扩展总线（Peripheral Component Interconnect Express）
   \item[P2P] 点对点通信（Peer-to-Peer）
   \item[RPS] 每秒请求数（Requests Per Second）
+  \item[EPOT] 每输出Token能耗（Energy Per Output Token）
+  \item[MAE] 平均绝对误差（Mean Absolute Error）
+  \item[OOM] 显存溢出（Out Of Memory）
+  \item[FFN] 前馈网络（Feed-Forward Network）
+  \item[AGI] 通用人工智能（Artificial General Intelligence）
+  \item[DNN] 深度神经网络（Deep Neural Network）
+  \item[MoE] 混合专家模型（Mixture of Experts）
+
+  % 并行策略相关
   \item[DP] 数据并行（Data Parallelism）
   \item[TP] 张量并行（Tensor Parallelism）
   \item[PP] 流水线并行（Pipeline Parallelism）
   \item[SP] 序列并行（Sequence Parallelism）
   \item[FSDP] 完全分片数据并行（Fully Sharded Data Parallelism）
-  \item[MoE] 混合专家模型（Mixture of Experts）
+  \item[ZeRO] 零冗余优化器（Zero Redundancy Optimizer）
+
+  % GreenServe系统相关符号
+  \item[$N_P$] Prefill实例数量
+  \item[$N_D$] Decode实例数量
+  \item[$S_P$] Prefill阶段的TTFT SLO目标（单位：ms）
+  \item[$S_D$] Decode阶段的ITL SLO目标（单位：ms）
+  \item[$f$] GPU频率（单位：MHz）
+  \item[$\mathcal{F}$] 可选频率集合
+  \item[$\mathcal{F}_P$] Prefill实例可选频率集合
+  \item[$\mathcal{F}_D$] Decode实例可选频率集合
+  \item[$P$] GPU功率（单位：W）
+  \item[$T$] 执行时间（单位：ms）
+  \item[$E$] 能耗（单位：J）
+  \item[$V$] GPU电压
+  \item[$N_{\text{req}}$] 批处理请求数（batch size）
+  \item[$N_{\text{tok}}$] 批处理token数
+  \item[$N_{\text{kv}}$] KV缓存中的token数
+  \item[$T_P(\cdot)$] Prefill延迟预测函数
+  \item[$T_D(\cdot)$] Decode延迟预测函数
+  \item[$\Delta$] 频率阈值（用于EcoRoute路由决策）
+  \item[$\beta$] 算术强度相关系数（$0\le\beta\le1$）
+  \item[$\alpha$] 电压-频率关系系数
+
+  % WeiPipe系统相关符号
+  \item[$G$] Micro-batch size
+  \item[$S$] 序列长度
+  \item[$H$] 隐藏层维度
+  \item[$L$] 模型层数
+  \item[$P$] Worker数量（流水线阶段数）
+  \item[$W$] 模型权重
+  \item[$W_i$] 第$i$层的权重
+  \item[$A$] 激活值
+  \item[$A_i$] 第$i$层的激活值
+  \item[$D$] 权重梯度
+  \item[$D_i$] 第$i$层的权重梯度
+
+  % CATFlow系统相关符号
   \item[CAT] 约束感知张量（Constraint-Aware Tensor）
-  \item[MAE] 平均绝对误差（Mean Absolute Error）
-  \item[OOM] 显存溢出（Out Of Memory）
-  \item[EPOT] 每输出Token能耗（Energy Per Output Token）
-  \item[FFN] 前馈网络（Feed-Forward Network）
-  \item[AGI] 通用人工智能（Artificial General Intelligence）
+  \item[$C_A$] 张量$A$的约束向量（时空轨迹）
+  \item[$t$] Lamport逻辑时间戳
+  \item[$\text{Device}_i$] 第$i$个物理设备
 \end{denotation}
