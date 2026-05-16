@@ -1,47 +1,20 @@
 % !TeX root = ../main.tex
-
-% 中英文摘要和关键字
-
 \begin{abstract}
-基于Transformer的大语言模型（LLM）在智能对话、代码生成以及智能体系统等领域取得了显著成功，展现出通往通用人工智能的巨大潜力。
-然而，由于大模型参数规模巨大，其全生命周期对计算、存储、通信及能耗等资源提出了极高的需求，制约了其进一步地发展。若其中任一资源的供给不足成为瓶颈，不仅会限制系统整体性能，还会导致其他资源的闲置与浪费。
-在推理阶段，\textbf{能效}是制约服务规模扩展的重要因素。受限于数据中心电力供应极限，需要在延迟约束下追求更高的能效比以缓解容量压力。
-在训练阶段，\textbf{通信}是制约计算利用率的关键瓶颈。在互联带宽受限的集群中，传统并行方案的通信开销会随着大模型上下文长度的增长而增大，严重拖累了整体的训练吞吐，需要新的并行范式来降低通信压力。
-\textbf{并行策略}设计是制约异构资源高效利用的另一大难点。合理的策略优化能够有效利用充裕资源缓解稀缺资源的瓶颈。然而，面对多样化的硬件环境，依赖人工经验的静态策略难以适配多维资源约束，无法全面探索优化空间，亟需高效的自动化策略发现机制。
-基于以上三个问题，本文从能效优化、通信优化和并行策略自动发现三个维度展开研究。研究内容和贡献如下：
+基于Transformer的大语言模型（LLM）在智能对话、代码生成以及智能体系统等领域取得了显著成功。随着应用需求的不断发展，模型所需处理的上下文长度持续增长，长上下文已成为大语言模型的重要发展方向。然而，序列长度的扩展显著放大了计算、存储、通信与能耗等多维资源开销，使不同资源之间的相互制约关系更加突出，导致资源利用率成为制约系统性能与规模扩展的核心瓶颈。
 
-（1）针对大模型推理服务中的能效问题，本文揭示了LLM推理存在非单调的“U型能耗-频率”曲线以及由硬件分块机制导致的“能效阶梯”现象。
-据此，本文设计并实现了GreenServe系统，通过精细化的频率调节与请求调度，
-在保障整体推理服务质量前提下，实现了相比原先静态策略高达36.3\%的端到端能耗降低。
+在长上下文大模型计算过程中，计算、通信、存储与能耗等资源之间存在复杂的相互依赖关系：推理阶段中计算与能耗的协同决定系统能效上限，训练阶段中计算与通信的协同影响整体吞吐，而多资源约束下的并行策略则直接决定资源利用效率。现有方法多针对单一资源进行局部优化，缺乏面向长上下文场景的多资源协同优化机制，难以实现整体效率最优。
 
-（2）针对长上下文大模型训练中中间激活值通信量爆炸的问题，本文深入分析了通信开销与模型架构的关系，提出了权重流水线并行新范式WeiPipe。
-与传统的传递激活值的流水线并行不同，WeiPipe通过在设备间流转模型权重及其梯度，将通信量从与序列长度和模型大小相关解耦为仅与模型大小相关。
-实验表明，在长序列训练场景下，WeiPipe相比现有主流的流水线方案实现了30\%至80\%的吞吐量提升。
+围绕长上下文大模型计算中的多资源协同优化问题，本文从统一视角出发，系统研究推理与训练阶段中的关键资源瓶颈及其协同优化方法，并构建跨层次的优化框架，以提升整体资源利用率。
 
-（3）针对并行策略设计难题，本文提出了基于数据一元论的自动发现框架CATFlow。将并行计划建模为约束感知张量的时空轨迹优化问题，通过自动搜索发现了包括ZeRO-3.5在内的新型高效策略，不引入额外开销的前提下，能够在不同配置下相比经典策略提升达39.1\%的吞吐。
+首先，在推理阶段，本文分析了长上下文负载下计算与能耗之间的协同关系，揭示了LLM推理中非单调的“U型能耗-频率”曲线以及由硬件分块机制导致的“能效阶梯”现象。在此基础上，设计并实现了GreenServe系统，通过精细化频率调节与请求调度，在满足延迟约束的前提下实现多资源协同优化，相比静态策略最高降低36.3\%的端到端能耗。
 
+其次，在训练阶段，针对长上下文引发的中间激活值通信量随序列长度爆炸的问题，本文分析了计算与通信之间的协同瓶颈，指出传统并行方法在长序列场景下的局限性。为此，提出了WeiPipe权重流水线并行范式，通过在设备间流转模型权重及其梯度，重构通信模式，将通信复杂度从依赖序列长度解耦为仅与模型规模相关，从而提升系统整体资源利用率，在长序列训练场景中实现30\%至80\%的吞吐提升。
 
-  % 关键词用”英文逗号”分隔，输出时会自动处理为正确的分隔符
-  \thusetup{
-    keywords = {大语言模型,分布式计算,并行优化,能效优化},
-  }
+最后，针对多资源约束与异构环境下并行策略设计复杂、难以人工优化的问题，本文提出自动并行策略发现框架CATFlow。该方法基于数据一元论，将并行执行建模为约束感知张量的时空轨迹优化问题，通过自动搜索实现多资源的全局协同优化，在不同配置下自适应生成高效策略，发现包括ZeRO-3.5在内的新型并行方案，在无额外开销的前提下实现最高39.1\%的吞吐提升。
+
+综上，本文面向长上下文大模型计算，从推理与训练两个阶段出发，在能效优化、通信重构与策略自动化三个层面系统解决多资源协同优化问题，实现了资源利用率的整体提升，为构建高效、可扩展的大语言模型系统提供了统一的方法与实践路径。
+
+\thusetup{
+  keywords = {大语言模型,长上下文,多资源协同优化,并行计算},
+}
 \end{abstract}
-
-\begin{abstract*}
-Transformer-based large language models (LLMs) have achieved remarkable success in intelligent dialogue, code generation, and agent systems, demonstrating enormous potential toward artificial general intelligence. However, due to their massive parameter scale, LLMs impose extremely high demands on computation, memory, communication, and energy throughout their lifecycle, significantly constraining further development. When any single resource becomes a bottleneck, it not only limits overall system performance but also leads to idling and waste of other resources.
-
-During inference, \textbf{energy efficiency} is a critical factor limiting service scalability. Constrained by the power supply limits of data centers, higher energy efficiency must be pursued under latency constraints to alleviate capacity pressure. During training, \textbf{communication} is the key bottleneck restricting computational utilization. In clusters with limited interconnect bandwidth, the communication overhead of conventional parallelism schemes grows with the context length of large models, severely hampering overall training throughput and necessitating new parallel paradigms. \textbf{Parallel strategy} design is another major challenge for efficient utilization of heterogeneous resources. While well-designed strategies can leverage abundant resources to alleviate scarce ones, static strategies relying on expert experience fail to adapt to multi-dimensional resource constraints across diverse hardware environments, calling for efficient automated strategy discovery.
-
-Based on the above three challenges, this thesis conducts systematic research from three dimensions: energy efficiency optimization, communication optimization, and automatic parallel strategy discovery. The contributions are as follows:
-
-(1) For the energy efficiency problem in LLM inference serving, this thesis reveals that LLM inference exhibits a non-monotonic U-shaped energy-frequency curve and an ``energy staircase'' phenomenon caused by hardware tiling granularity. Accordingly, GreenServe is designed and implemented, which achieves up to 36.3\% reduction in end-to-end energy consumption compared to static strategies while preserving service level objectives, through fine-grained frequency control and request routing.
-
-(2) For the communication explosion of intermediate activations in long-context LLM training, this thesis analyzes the relationship between communication overhead and model architecture, and proposes WeiPipe---a novel weight pipeline parallelism paradigm. Unlike conventional pipeline parallelism that passes activations, WeiPipe circulates model weights and gradients across devices, decoupling communication volume from sequence length to depend only on model size. Experiments show that WeiPipe achieves 30\% to 80\% throughput improvement over mainstream pipeline methods in long-sequence training scenarios.
-
-(3) For the challenge of parallel strategy design, this thesis proposes CATFlow---an automatic discovery framework based on data-monistic abstraction. By modeling parallel plans as spatiotemporal trajectory optimization of Constraint-Aware Tensors (CATs) and employing a potential energy descent search algorithm, CATFlow automatically discovers novel efficient strategies including ZeRO-3.5 and ZeRO-4, achieving up to 39.1\% throughput improvement over classical strategies across various configurations without introducing additional overhead.
-
-  % Use comma as separator when inputting
-  \thusetup{
-    keywords* = {large language model, distributed computing, parallel optimization, energy efficiency},
-  }
-\end{abstract*}
